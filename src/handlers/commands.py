@@ -91,6 +91,9 @@ async def show_profile(message: Message):
 
 @bl.private_message(text="Начать поиск")
 async def find_companion(message: Message):
+    if chat_manager.check_queue(message.from_id):
+        return "Вы уже в очереди"
+
     curr_user = await chat_manager.find_companion(message.from_id)
     
     if not curr_user:
