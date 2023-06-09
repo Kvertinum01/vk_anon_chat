@@ -39,13 +39,14 @@ class UploadManager:
             return None
 
         file_data = await self._api.http_client.request_content(doc_url)
-        file_bytes = uploader.get_bytes_io(file_data, name="document")
+        file_bytes = uploader.get_bytes_io(file_data)
 
         server = await uploader.get_server(**params)
 
         up_obj = await uploader.upload_files(server["upload_url"], {upload_doc_type: file_bytes})
+        print(up_obj)
         res_obj = await self._api.request(
-            methods[doc_type], {**up_obj, **params}
+            methods[doc_type], {**up_obj}
         )
 
         if doc_type in ["audio_message"]:

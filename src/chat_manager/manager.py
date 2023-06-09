@@ -1,5 +1,3 @@
-from sqlalchemy import select, or_, and_
-
 from src.models.user_model import User
 from src.repositories import UserRepository
 

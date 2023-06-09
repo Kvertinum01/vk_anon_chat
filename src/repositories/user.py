@@ -1,7 +1,7 @@
 from src.models.db import session
 from src.models.user_model import User
 
-from typing import Optional, Sequence
+from typing import Optional
 
 from sqlalchemy import select, update
 
@@ -30,13 +30,13 @@ class UserRepository:
 
 
     async def check_reg(self):
-        query = select(User).where(User.id == self.user_id and User.platform == self.platform)
-        ex_res = await session.execute(query)
-        user: Optional[User] = ex_res.scalar()
+        user = await self.get()
+
         if user is None:
             return False
         if user.end_reg == False:
             return False
+        
         return True
     
 

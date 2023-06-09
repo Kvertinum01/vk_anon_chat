@@ -24,8 +24,8 @@ async def continue_chat(message: Message):
 
 @bl.private_message(state=UserInfo.AGE)
 async def save_user_age(message: Message):
-    user_rep = UserRepository(message.from_id)
     await app.bot.state_dispenser.delete(message.from_id)
+    user_rep = UserRepository(message.from_id)
     
     if not message.text.isdigit():
         return await message.answer(
