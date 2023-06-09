@@ -60,8 +60,7 @@ async def start_bot(message: Message):
 
 @bl.private_message(text=["Вернуться в старый чат", "⏪ Старая версия чата"])
 async def back_to_old_chat(message: Message):
-    print(kbs.old_chat_conf_kb)
-    return await message.answer(texts.old_chat, kbs.old_chat_conf_kb)
+    return await message.answer(texts.old_chat, keyboard=kbs.old_chat_conf_kb)
 
 
 @bl.private_message(text=["Мужской", "Женский"])
