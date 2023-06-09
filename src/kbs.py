@@ -8,8 +8,9 @@ welcome_kb = (
 ).get_json()
 
 
-old_chat_conf_kb = Keyboard(inline=True).add(
-    OpenLink("https://vk.com", "Перейти в чат")
+old_chat_conf_kb = (
+    Keyboard(inline=True)
+    .add(OpenLink("https://vk.com", "Перейти в чат"))
 ).get_json()
 
 
