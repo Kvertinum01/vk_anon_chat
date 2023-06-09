@@ -25,15 +25,14 @@ class ChatManager:
         return self._queue.append(user_inf)
     
 
-    def check_queue(self, user_id: int):
+    async def check_queue(self, user_id: int):
         for curr_user in self._queue:
-            if curr_user.id != user_id:
-                continue
-            return True
+            if curr_user.id == user_id:
+                return True
         return False
     
 
-    def leave_queue(self, user_id: int):
+    async def leave_queue(self, user_id: int):
         for curr_user in self._queue:
             if curr_user.id != user_id:
                 continue
