@@ -1,0 +1,4 @@
+vkbottle
+SQLAlchemy
+python-dotenv
+asyncpg
