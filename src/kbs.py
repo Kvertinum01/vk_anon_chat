@@ -4,7 +4,12 @@ welcome_kb = (
     Keyboard(inline=True)
     .add(Text("Продолжить"), KeyboardButtonColor.POSITIVE)
     .row()
-    .add(OpenLink("https://vk.com", "Вернуться в старый чат"))
+    .add(Text("https://vk.com", "Вернуться в старый чат"))
+).get_json()
+
+
+old_chat_conf_kb = Keyboard(inline=True).add(
+    OpenLink("https://vk.com", "Перейти в чат")
 ).get_json()
 
 
@@ -27,7 +32,7 @@ main_menu_kb = (
     .row()
     .add(Text("👤 Мой профиль"), KeyboardButtonColor.PRIMARY)
     .row()
-    .add(OpenLink("https://vk.com", "⏪ Старая версия чата"))
+    .add(Text("⏪ Старая версия чата"))
 ).get_json()
 
 
