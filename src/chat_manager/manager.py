@@ -27,8 +27,9 @@ class ChatManager:
 
     async def check_queue(self, user_id: int):
         for curr_user in self._queue:
-            if curr_user.id == user_id:
-                return True
+            if curr_user.id != user_id:
+                continue
+            return True
         return False
     
 
