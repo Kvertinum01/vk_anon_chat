@@ -16,7 +16,7 @@ bl = BotLabeler()
 chat_manager = ChatManager()
 
 
-@bl.private_message(text=["Продолжить", "Ввести повторно", "Изменить данные"])
+@bl.private_message(text=["Продолжить", "Ввести повторно", "✏ Изменить данные"])
 async def continue_chat(message: Message):
     await app.bot.state_dispenser.set(message.from_id, UserInfo.AGE)
     return "Введите ваш возраст, например 18"
