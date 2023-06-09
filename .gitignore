@@ -1,4 +1,5 @@
 __pycache__/
+migration/
 *.py[cod]
 *$py.class
 *.ini
