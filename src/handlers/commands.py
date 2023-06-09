@@ -58,7 +58,7 @@ async def start_bot(message: Message):
     await message.answer(texts.start_bot, keyboard=kbs.welcome_kb)
 
 
-@bl.private_message(text=["Вернуться в старый чат", "Старая версия чата"])
+@bl.private_message(text=["Вернуться в старый чат", "⏪ Старая версия чата"])
 async def back_to_old_chat(_):
     return texts.old_chat
 
@@ -76,7 +76,7 @@ async def choose_sex(message: Message):
     await message.answer("⚡Выберите действие:", keyboard=kbs.main_menu_kb)
 
 
-@bl.private_message(text="Мой профиль")
+@bl.private_message(text="👤 Мой профиль")
 async def show_profile(message: Message):
     user_rep = UserRepository(message.from_id)
     user_inf = await user_rep.get()
@@ -89,7 +89,7 @@ async def show_profile(message: Message):
     ), keyboard=kbs.change_data_kb)
 
 
-@bl.private_message(text="Начать поиск")
+@bl.private_message(text="🔍 Начать поиск")
 async def find_companion(message: Message):
     if await chat_manager.check_queue(message.from_id):
         return "Вы уже в очереди"

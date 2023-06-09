@@ -1,10 +1,10 @@
-from vkbottle import Keyboard, KeyboardButtonColor, Text
+from vkbottle import Keyboard, KeyboardButtonColor, Text, OpenLink
 
 welcome_kb = (
     Keyboard(inline=True)
     .add(Text("Продолжить"), KeyboardButtonColor.POSITIVE)
     .row()
-    .add(Text("Вернуться в старый чат"))
+    .add(OpenLink("vk.com", "Вернуться в старый чат"))
 ).get_json()
 
 
@@ -23,12 +23,12 @@ choose_sex_kb = (
 
 main_menu_kb = (
     Keyboard()
-    .add(Text("Начать поиск"), KeyboardButtonColor.POSITIVE)
+    .add(Text("🔍 Начать поиск"), KeyboardButtonColor.POSITIVE)
     .row()
-    .add(Text("Мой профиль"), KeyboardButtonColor.PRIMARY)
+    .add(Text("👤 Мой профиль"), KeyboardButtonColor.PRIMARY)
     .row()
-    .add(Text("Старая версия чата"))
-)
+    .add(OpenLink("vk.com", "⏪ Старая версия чата"))
+).get_json()
 
 
 change_data_kb = (
