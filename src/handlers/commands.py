@@ -94,13 +94,26 @@ async def find_companion(message: Message):
     curr_user = await chat_manager.find_companion(message.from_id)
     
     if not curr_user:
-        return "Вы в очереди на поиск собеседника. Ожидайте"  
+        return await message.answer(
+            "Вы в очереди на поиск собеседника. Ожидайте",
+            keyboard=kbs.leave_queue_kb
+        )
     
     await message.answer(texts.got_companion, keyboard=EMPTY_KEYBOARD)
     await api_manager[curr_user.id].messages.send(
         curr_user.id, message=texts.got_companion,
         keyboard=EMPTY_KEYBOARD, random_id=0
     )
+
+
+@bl.private_message(text="Покинуть очередь")
+async def leave_queue(message: Message):
+    leave_res = chat_manager.leave_queue(message.from_id)
+
+    if not leave_res:
+        return "Вы не в очереди"
+    
+    return "Вы покинули очередь"
 
 
 @bl.private_message(rules.CommandRule("стоп", ["!", "/"]))

@@ -2,3 +2,4 @@ vkbottle
 SQLAlchemy
 python-dotenv
 asyncpg
+psycopg2

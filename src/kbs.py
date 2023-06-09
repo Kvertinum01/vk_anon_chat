@@ -49,3 +49,8 @@ reg_first_kb = (
     Keyboard(inline=True)
     .add(Text("Начать"))
 ).get_json()
+
+leave_queue_kb = (
+    Keyboard(inline=True)
+    .add(Text("Покинуть очередь"), KeyboardButtonColor.NEGATIVE)
+).get_json()
