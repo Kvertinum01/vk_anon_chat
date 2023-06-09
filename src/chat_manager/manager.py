@@ -28,10 +28,12 @@ class ChatManager:
     
 
     def leave_queue(self, user_id: int):
-        if user_id not in self._queue:
-            return False
-        self._queue.remove(user_id)
-        return True
+        for curr_user in self._queue:
+            if curr_user.id != user_id:
+                continue
+            self._queue.remove(curr_user)
+            return True
+        return False
 
 
     def new_chat(self, user_ids: List[int]):
