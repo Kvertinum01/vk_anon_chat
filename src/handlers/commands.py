@@ -58,7 +58,7 @@ async def start_bot(message: Message):
     await message.answer(texts.start_bot, keyboard=kbs.welcome_kb)
 
 
-@bl.private_message(text=["Вернуться в старый чат", "⏪ Старая версия чата"])
+@bl.private_message(text=["⏪ Вернуться в старый чат", "⏪ Старая версия чата"])
 async def back_to_old_chat(message: Message):
     return await message.answer(texts.old_chat, keyboard=kbs.old_chat_conf_kb)
 
