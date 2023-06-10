@@ -2,7 +2,7 @@ from vkbottle import (
     API,
     PhotoMessageUploader,
     VoiceMessageUploader,
-    DocMessagesUploader,
+    VideoUploader,
     BaseUploader
 )
 from typing import Optional
@@ -10,8 +10,8 @@ from typing import Optional
 
 methods = {
     "photo": "photos.saveMessagesPhoto",
-    "audio": "audio.save",
     "audio_message": "docs.save",
+    "video": None
 }
 
 
@@ -29,15 +29,16 @@ class UploadManager:
         uploader: Optional[BaseUploader] = None
         upload_doc_type = doc_type
 
-        if doc_type == "photo":
-            uploader = PhotoMessageUploader(self._api)
+        match doc_type:
+            case "photo":
+                uploader = PhotoMessageUploader(self._api)
 
-        elif doc_type == "audio_message":
-            uploader = VoiceMessageUploader(self._api)
-            upload_doc_type = "file"
+            case "audio_message":
+                uploader = VoiceMessageUploader(self._api)
+                upload_doc_type = "file"
 
-        if uploader is None:
-            return None
+            case _:
+                return None
 
         file_data = await self._api.http_client.request_content(doc_url)
         file_bytes = uploader.get_bytes_io(file_data)

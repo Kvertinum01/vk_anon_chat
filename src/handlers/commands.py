@@ -162,7 +162,7 @@ async def on_all(message: Message):
 
     for curr_attachment in message.attachments:
         attach_type = curr_attachment.type.value
-        
+
         if attach_type == "sticker":
             curr_sticker = curr_attachment.sticker.sticker_id
             continue
@@ -184,14 +184,8 @@ async def on_all(message: Message):
                     title="voice_message",
                 )
 
-            case "doc":
-                res_string = await upload_manager.get_attachment(
-                    attach_type, curr_attachment.doc.url,
-                    title=curr_attachment.doc.title,
-                )
-
-            case "audio":
-                res_string = f"audio{curr_attachment.audio.owner_id}_{curr_attachment.audio.id}"
+            case "video":
+                res_string = f"video{curr_attachment.video.owner_id}_{curr_attachment.video.id}"
 
             case _:
                 continue
