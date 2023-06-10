@@ -138,7 +138,7 @@ async def stop_dialog(message: Message):
     chat_manager.remove_active_chat(message.from_id)
 
     await api_manager[chat_user_id].messages.send(
-        chat_user_id, message="Собеседник закончил диалог",
+        chat_user_id, message="❗Собеседник закончил диалог",
         keyboard=kbs.main_menu_kb, random_id=0
     )
 
@@ -162,37 +162,39 @@ async def on_all(message: Message):
 
     for curr_attachment in message.attachments:
         attach_type = curr_attachment.type.value
+        
         if attach_type == "sticker":
             curr_sticker = curr_attachment.sticker.sticker_id
             continue
 
-        upload_manager = UploadManager(message.ctx_api)
+        upload_manager = UploadManager(message.ctx_api, message.peer_id)
 
         if not upload_manager.check_document(attach_type):
             continue
 
-        elif attach_type == "photo":
-            res_string = await upload_manager.get_attachment(
-                attach_type, curr_attachment.photo.sizes[-1].url,
-                peer_id=message.peer_id
-            )
+        match attach_type:
+            case "photo":
+                res_string = await upload_manager.get_attachment(
+                    attach_type, curr_attachment.photo.sizes[-1].url,
+                )
 
-        elif attach_type == "audio_message":
-            res_string = await upload_manager.get_attachment(
-                attach_type, curr_attachment.audio_message.link_ogg,
-                title="voice_message",
-                peer_id=message.peer_id
-            )
+            case "audio_message":
+                res_string = await upload_manager.get_attachment(
+                    attach_type, curr_attachment.audio_message.link_ogg,
+                    title="voice_message",
+                )
 
-        elif attach_type == "doc":
-            res_string = await upload_manager.get_attachment(
-                attach_type, curr_attachment.doc.url,
-                title="document",
-                peer_id=message.peer_id
-            )
+            case "doc":
+                res_string = await upload_manager.get_attachment(
+                    attach_type, curr_attachment.doc.url,
+                    title=curr_attachment.doc.title,
+                )
 
-        elif attach_type == "audio":
-            res_string = f"audio{curr_attachment.audio.owner_id}_{curr_attachment.audio.id}"
+            case "audio":
+                res_string = f"audio{curr_attachment.audio.owner_id}_{curr_attachment.audio.id}"
+
+            case _:
+                continue
 
         attachments.append(res_string)
 
