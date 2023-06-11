@@ -5,5 +5,5 @@ asyncpg
 psycopg2-binary
 uvicorn
 fastapi
-pydandic
+pydantic
 python-multipart
