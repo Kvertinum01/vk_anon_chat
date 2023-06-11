@@ -2,4 +2,8 @@ vkbottle
 SQLAlchemy
 python-dotenv
 asyncpg
-psycopg2
+psycopg2-binary
+uvicorn
+fastapi
+pydandic
+python-multipart

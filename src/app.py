@@ -2,14 +2,13 @@ from vkbottle.bot import Bot
 from vkbottle import API
 
 from src.handlers import labelers
+from src.handlers.wrapers import lw
 from src.config_reader import BOT_TOKEN, BOT_TOKEN_2
 from src.middlewares import CheckReg, ApiManager
 
 
 api_list = (API(BOT_TOKEN), API(BOT_TOKEN_2))
-
-
-bot = Bot()
+bot = Bot(loop_wrapper=lw)
 
 
 for custom_labeler in labelers:

@@ -1,39 +1,46 @@
 from src.models.user_model import User
 from src.repositories import UserRepository
 
-from typing import Optional, List
+from typing import Optional, Dict, List
 
 
 class ChatManager:
-    def __init__(self):
+    def __init__(self, platform = "vk"):
         self._active_chats: List[List[int]] = []
         self._queue: List[User] = []
+        self._prefers: Dict[int, int] = {}
+        self._platform = platform
 
 
-    async def find_companion(self, user_id: int, platform = "vk") -> Optional[User]:
-        user_rep = UserRepository(user_id, platform)
+    async def find_companion(self, user_id: int, sex_prefer: Optional[int] = None) -> Optional[User]:
+        user_rep = UserRepository(user_id, self._platform)
         user_inf = await user_rep.get()
 
         for curr_user in self._queue:
-            if curr_user.sex == user_inf.sex:
-                continue
+            if sex_prefer:
+                if curr_user.sex != sex_prefer:
+                    continue
+            if self._prefers.get(curr_user.id):
+                if self._prefers[curr_user.id] != user_inf.sex:
+                    continue
             if user_inf.age - 5 < curr_user.age < user_inf.age + 5:
                 self._queue.remove(curr_user)
                 self.new_chat([user_inf.id, curr_user.id])
                 return curr_user
 
+        if sex_prefer:
+            self._prefers[user_id] = sex_prefer
         return self._queue.append(user_inf)
     
 
-    async def check_queue(self, user_id: int):
+    def check_queue(self, user_id: int):
         for curr_user in self._queue:
-            if curr_user.id != user_id:
-                continue
-            return True
+            if curr_user.id == user_id:
+                return True
         return False
     
 
-    async def leave_queue(self, user_id: int):
+    def leave_queue(self, user_id: int):
         for curr_user in self._queue:
             if curr_user.id != user_id:
                 continue

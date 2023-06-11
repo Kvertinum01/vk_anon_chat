@@ -20,6 +20,8 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.now)
     platform = Column(String(5), default="vk")
     end_reg = Column(Boolean, default=False)
+    vip_status = Column(Boolean, default=False)
+    sub_id = Column(String(32), default="")
 
 
     def __repr__(self):

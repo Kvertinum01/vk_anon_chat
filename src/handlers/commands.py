@@ -1,4 +1,6 @@
-from vkbottle import EMPTY_KEYBOARD
+import json
+
+from vkbottle import EMPTY_KEYBOARD, PhotoMessageUploader, API
 from vkbottle.bot import BotLabeler, Message, rules
 
 from src import texts
@@ -7,13 +9,60 @@ from src import app
 
 from src.repositories import UserRepository
 from src.chat_manager.manager import ChatManager
+from src.chat_manager.cloudpayments import CloudPayments
 from src.states import UserInfo
 from src.upload_manager import UploadManager
 from src.middlewares import api_manager
+from src.config_reader import PAY_TOKEN, rates
 
 
 bl = BotLabeler()
-chat_manager = ChatManager()
+chat_manager = ChatManager("vk")
+cloud_payments = CloudPayments(PAY_TOKEN)
+
+
+async def send_vip_rates(user_id: int, is_chat = False):
+    user_rep = UserRepository(user_id)
+    user_inf = await user_rep.get()
+
+    curr_api = api_manager[user_id]
+
+    if user_inf.vip_status:
+        return await curr_api.messages.send(
+            user_id, random_id=0, message="👑 Вип: Подключен"
+        )
+
+    await cloud_payments.setup(curr_api.http_client)
+
+    pay_objects = [
+        await cloud_payments.method(
+            "orders/create", {
+                "Amount": curr_data["amount"],
+                "Description": curr_data["desc"],
+                "AccountId": str(user_id),
+                "RequireConfirmation": curr_data["confirm"],
+                "JsonData": curr_data["json_data"],
+            }
+        ) for curr_data in rates
+    ]
+
+    vip_links = [curr_obj["Url"] for curr_obj in pay_objects]
+
+    res_text = texts.vip_info.format(extra_info="")
+
+    if is_chat:
+        res_text = texts.vip_info.format(
+            extra_info="\n1 руб. - 1 час (затем списание 399 руб. раз в 2 недели)\n"
+        )
+
+    photo_uploader = PhotoMessageUploader(curr_api)
+    res_attachment = await photo_uploader.upload("misc/images/vip_info.jpg")
+
+    return await curr_api.messages.send(
+        user_id, random_id=0, message=res_text,
+        attachment=res_attachment,
+        keyboard=kbs.buy_vip_kb(vip_links, is_chat)
+    )
 
 
 @bl.private_message(text=["Продолжить", "Ввести повторно", "✏ Изменить данные"])
@@ -66,14 +115,18 @@ async def back_to_old_chat(message: Message):
 @bl.private_message(text=["Мужской", "Женский"])
 async def choose_sex(message: Message):
     user_rep = UserRepository(message.from_id)
+    user_inf = await user_rep.get()
     curr_sex = 1 if message.text == "Мужской" else 2
 
-    if user_rep.get() is None:
+    if user_inf is None:
         return "Для начала пройдите регистрацию"
 
     await user_rep.end_reg()
     await user_rep.update_sex(curr_sex)
-    await message.answer("⚡Выберите действие:", keyboard=kbs.main_menu_kb)
+    await message.answer(
+        "⚡Выберите действие:",
+        keyboard=kbs.main_menu_kb(curr_sex, user_inf.vip_status)
+    )
 
 
 @bl.private_message(text="👤 Мой профиль")
@@ -82,19 +135,45 @@ async def show_profile(message: Message):
     user_inf = await user_rep.get()
 
     text_sex = "Мужской" if user_inf.sex == 1 else "Женский"
+    text_vip = "Подключен" if user_inf.vip_status else "Отсутствует"
 
     await message.answer(texts.profile_text.format(
         sex=text_sex, age=user_inf.age,
-        created_at=user_inf.created_at.strftime("%d.%m.%Y")
-    ), keyboard=kbs.change_data_kb)
+        created_at=user_inf.created_at.strftime("%d.%m.%Y"),
+        vip_status=text_vip,
+    ), keyboard=kbs.profile_kb(user_inf.vip_status))
 
 
-@bl.private_message(text="🔍 Начать поиск")
+@bl.private_message(text="Отключить VIP")
+async def remove_vip(message: Message):
+    user_rep = UserRepository(message.from_id)
+    user_inf = await user_rep.get()
+
+    if not user_inf.vip_status:
+        return "У вас отсутствует подписка"
+
+    await cloud_payments.setup()
+    await cloud_payments.method("subscriptions/cancel", {"Id": user_inf.sub_id})
+
+    await user_rep.del_vip()
+
+    return "Подписка успешна отключена"
+
+
+@bl.private_message(text=["🔍 Начать поиск", "👄 Найти девушку"])
 async def find_companion(message: Message):
-    if await chat_manager.check_queue(message.from_id):
+    if chat_manager.check_active_chats(message.from_id):
+        return "Вы уже в чате"
+
+    if chat_manager.check_queue(message.from_id):
         return "Вы уже в очереди"
 
-    curr_user = await chat_manager.find_companion(message.from_id)
+    sex_prefer = None
+
+    if message.text == "👄 Найти девушку":
+        sex_prefer = 2
+
+    curr_user = await chat_manager.find_companion(message.from_id, sex_prefer)
     
     if not curr_user:
         return await message.answer(
@@ -111,7 +190,7 @@ async def find_companion(message: Message):
 
 @bl.private_message(text="Покинуть очередь")
 async def leave_queue(message: Message):
-    leave_res = await chat_manager.leave_queue(message.from_id)
+    leave_res = chat_manager.leave_queue(message.from_id)
 
     if not leave_res:
         return "Вы не в очереди"
@@ -137,12 +216,19 @@ async def stop_dialog(message: Message):
     chat_user_id = chat_manager.get_active_user(message.from_id)
     chat_manager.remove_active_chat(message.from_id)
 
+    chat_user_inf = await UserRepository(chat_user_id).get()
+    curr_user_inf = await UserRepository(message.from_id).get()
+
     await api_manager[chat_user_id].messages.send(
         chat_user_id, message="❗Собеседник закончил диалог",
-        keyboard=kbs.main_menu_kb, random_id=0
+        keyboard=kbs.main_menu_kb(chat_user_inf.sex, curr_user_inf.vip_status),
+        random_id=0
     )
 
-    return await message.answer("✅ Вы закончили диалог", keyboard=kbs.main_menu_kb)
+    return await message.answer(
+        "✅ Вы закончили диалог",
+        keyboard=kbs.main_menu_kb(chat_user_inf.sex, curr_user_inf.vip_status)
+    )
 
 
 @bl.private_message(rules.CommandRule("новый", ["!", "/"]))
@@ -151,21 +237,38 @@ async def new_chat(message: Message):
     await find_companion(message)
 
 
+@bl.private_message(text="👑 VIP статус")
+async def vip_info(message: Message):
+    await send_vip_rates(message.from_id)
+
+
+@bl.private_message(text="Оформить")
+async def vip_info(message: Message):
+    if not chat_manager.check_active_chats(message.from_id):
+        return "Функция доступна только в диалоге с пользователем"
+
+    await send_vip_rates(message.from_id, True)
+
+
 @bl.private_message()
 async def on_all(message: Message):
+    curr_user_inf = await UserRepository(message.from_id).get()
+
     if not chat_manager.check_active_chats(message.from_id):
-        return await message.answer(texts.unk_command, keyboard=kbs.main_menu_kb)
+        return await message.answer(
+            texts.unk_command,
+            keyboard=kbs.main_menu_kb(curr_user_inf.sex, curr_user_inf.vip_status)
+        )
     
     chat_user_id = chat_manager.get_active_user(message.from_id)
     attachments = []
-    curr_sticker = None
+
+    chat_user_inf = await UserRepository(chat_user_id).get()
+
+    curr_vip_status = chat_user_inf.vip_status or curr_user_inf.vip_status
 
     for curr_attachment in message.attachments:
         attach_type = curr_attachment.type.value
-
-        if attach_type == "sticker":
-            curr_sticker = curr_attachment.sticker.sticker_id
-            continue
 
         upload_manager = UploadManager(message.ctx_api, message.peer_id)
 
@@ -174,17 +277,53 @@ async def on_all(message: Message):
 
         match attach_type:
             case "photo":
+                if not curr_vip_status:
+                    await message.answer(
+                        "Чтобы обмениваться фото с собеседником, подключи VIP тариф",
+                        keyboard=kbs.vip_in_chat_kb
+                    )
+                    return await api_manager[chat_user_id].messages.send(
+                        chat_user_id, random_id=0,
+                        message="Собеседник отправил вам фото. "
+                        "Разблокируйте возможность просмотра и обмена фотографиями.",
+                        keyboard=kbs.vip_in_chat_kb
+                    )
+
                 res_string = await upload_manager.get_attachment(
                     attach_type, curr_attachment.photo.sizes[-1].url,
                 )
 
             case "audio_message":
+                if not curr_vip_status:
+                    await message.answer(
+                        "Голосовые могут отправлять только VIP юзеры",
+                        keyboard=kbs.vip_in_chat_kb
+                    )
+                    return await api_manager[chat_user_id].messages.send(
+                        chat_user_id, random_id=0,
+                        message="Собеседник пытался отправить вам голосовое. "
+                        "Оформите VIP статус и обменивайтесь голосовыми.",
+                        keyboard=kbs.vip_in_chat_kb
+                    )
+
                 res_string = await upload_manager.get_attachment(
                     attach_type, curr_attachment.audio_message.link_ogg,
                     title="voice_message",
                 )
 
             case "video":
+                if not curr_vip_status:
+                    await message.answer(
+                        "Отправка видео ограниченна! Оплатите VIP тариф.",
+                        keyboard=kbs.vip_in_chat_kb
+                    )
+                    return await api_manager[chat_user_id].messages.send(
+                        chat_user_id, random_id=0,
+                        message="Собеседник пытался отправить вам видео. "
+                        "Разблокируйте возможность просмотра и обмена видео.",
+                        keyboard=kbs.vip_in_chat_kb
+                    )
+
                 res_string = f"video{curr_attachment.video.owner_id}_{curr_attachment.video.id}"
 
             case _:
@@ -194,7 +333,7 @@ async def on_all(message: Message):
 
     await api_manager[chat_user_id].messages.send(
         chat_user_id, message=message.text,
-        attachment=",".join(attachments), sticker_id=curr_sticker,
+        attachment=",".join(attachments),
         random_id=0
     )
 
