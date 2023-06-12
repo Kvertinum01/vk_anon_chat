@@ -152,6 +152,14 @@ async def show_profile(message: Message):
 
 @bl.private_message(text="Отключить VIP")
 async def remove_vip(message: Message):
+    return await message.answer(
+        "Вы уверены, что хотетие отключить подписку?",
+        keyboard=kbs.confirm_disable_vip_kb
+    )
+
+
+@bl.private_message(rules.PayloadRule({"cmd": "confirm_vip"}))
+async def confirm_remove_vip(message: Message):
     user_rep = UserRepository(message.from_id)
     user_inf = await user_rep.get()
 
@@ -228,7 +236,7 @@ async def stop_dialog(message: Message):
 
     await message.answer(
         "✅ Вы закончили диалог",
-        keyboard=kbs.main_menu_kb(chat_user_inf.sex, curr_user_inf.vip_status)
+        keyboard=kbs.main_menu_kb(curr_user_inf.sex, curr_user_inf.vip_status)
     )
 
     await api_manager[chat_user_id].messages.send(
