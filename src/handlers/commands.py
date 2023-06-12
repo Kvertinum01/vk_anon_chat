@@ -226,15 +226,15 @@ async def stop_dialog(message: Message):
     chat_user_inf = await UserRepository(chat_user_id).get()
     curr_user_inf = await UserRepository(message.from_id).get()
 
+    await message.answer(
+        "✅ Вы закончили диалог",
+        keyboard=kbs.main_menu_kb(chat_user_inf.sex, curr_user_inf.vip_status)
+    )
+
     await api_manager[chat_user_id].messages.send(
         chat_user_id, message="❗Собеседник закончил диалог",
         keyboard=kbs.main_menu_kb(chat_user_inf.sex, curr_user_inf.vip_status),
         random_id=0
-    )
-
-    return await message.answer(
-        "✅ Вы закончили диалог",
-        keyboard=kbs.main_menu_kb(chat_user_inf.sex, curr_user_inf.vip_status)
     )
 
 
@@ -338,10 +338,10 @@ async def on_all(message: Message):
 
         attachments.append(res_string)
 
+    await message.ctx_api.messages.mark_as_read(peer_id=message.peer_id)
+
     await api_manager[chat_user_id].messages.send(
         chat_user_id, message=message.text,
         attachment=",".join(attachments),
         random_id=0
     )
-
-    await message.ctx_api.messages.mark_as_read(peer_id=message.peer_id)
