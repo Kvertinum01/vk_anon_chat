@@ -233,7 +233,7 @@ async def stop_dialog(message: Message):
 
     await api_manager[chat_user_id].messages.send(
         chat_user_id, message="❗Собеседник закончил диалог",
-        keyboard=kbs.main_menu_kb(chat_user_inf.sex, curr_user_inf.vip_status),
+        keyboard=kbs.main_menu_kb(chat_user_inf.sex, chat_user_inf.vip_status),
         random_id=0
     )
 
