@@ -11,12 +11,14 @@ from src.repositories import UserRepository
 from src.chat_manager.manager import ChatManager
 from src.chat_manager.cloudpayments import CloudPayments
 from src.states import UserInfo
-from src.upload_manager import UploadManager
-from src.middlewares import api_manager
+from src.uploading.upload_manager import UploadManager
+from src.uploading.upload_cache import CacheAssistant
+from src.middlewares import api_manager, cached_urls
 from src.config_reader import PAY_TOKEN, rates
 
 
 bl = BotLabeler()
+cache_assistant = CacheAssistant()
 chat_manager = ChatManager("vk")
 cloud_payments = CloudPayments(PAY_TOKEN)
 
@@ -32,21 +34,24 @@ async def send_vip_rates(user_id: int, is_chat = False):
             user_id, random_id=0, message="👑 Вип: Подключен"
         )
 
-    await cloud_payments.setup(curr_api.http_client)
+    if cached_urls.get(user_id) is None:
+        await cloud_payments.setup(curr_api.http_client)
 
-    pay_objects = [
-        await cloud_payments.method(
-            "orders/create", {
-                "Amount": curr_data["amount"],
-                "Description": curr_data["desc"],
-                "AccountId": str(user_id),
-                "RequireConfirmation": curr_data["confirm"],
-                "JsonData": curr_data["json_data"],
-            }
-        ) for curr_data in rates
-    ]
+        pay_objects = [
+            await cloud_payments.method(
+                "orders/create", {
+                    "Amount": curr_data["amount"],
+                    "Description": curr_data["desc"],
+                    "AccountId": str(user_id),
+                    "RequireConfirmation": curr_data["confirm"],
+                    "JsonData": curr_data["json_data"],
+                }
+            ) for curr_data in rates
+        ]
+        
+        cached_urls[user_id] = [curr_obj["Url"] for curr_obj in pay_objects]
 
-    vip_links = [curr_obj["Url"] for curr_obj in pay_objects]
+    vip_links = cached_urls[user_id]
 
     res_text = texts.vip_info.format(extra_info="")
 
@@ -55,8 +60,9 @@ async def send_vip_rates(user_id: int, is_chat = False):
             extra_info="\n1 руб. - 1 час (затем списание 399 руб. раз в 2 недели)\n"
         )
 
-    photo_uploader = PhotoMessageUploader(curr_api)
-    res_attachment = await photo_uploader.upload("misc/images/vip_info.jpg")
+    res_attachment = await cache_assistant.get_photo(
+        curr_api, "misc/images/vip_info.jpg"
+    )
 
     return await curr_api.messages.send(
         user_id, random_id=0, message=res_text,
@@ -169,9 +175,10 @@ async def find_companion(message: Message):
         return "Вы уже в очереди"
 
     sex_prefer = None
+    user_inf = await UserRepository(message.from_id).get()
 
-    if message.text == "👄 Найти девушку":
-        sex_prefer = 2
+    if message.text in ["👄 Найти девушку"] and user_inf.vip_status:
+        sex_prefer = 2 if user_inf.sex == 1 else 1
 
     curr_user = await chat_manager.find_companion(message.from_id, sex_prefer)
     

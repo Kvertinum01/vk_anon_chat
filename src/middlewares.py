@@ -5,7 +5,7 @@ from src.repositories.user import UserRepository
 from src import app
 from src.kbs import reg_first_kb
 
-from typing import Dict
+from typing import Dict, List
 
 
 start_commands = [
@@ -15,6 +15,14 @@ start_commands = [
 
 
 api_manager: Dict[int, API] = {}
+cached_urls: Dict[int, List[str]] = {}
+
+
+class CheckVip(BaseMiddleware[Message]):
+    async def pre(self):
+        user_inf = await UserRepository(self.event.from_id).get()
+        if self.event.from_id in cached_urls and user_inf.vip_status:
+            cached_urls.pop(self.event.from_id)
 
 
 class ApiManager(BaseMiddleware[Message]):

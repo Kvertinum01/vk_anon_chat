@@ -8,7 +8,7 @@ from src.repositories.user import UserRepository
 from src.config_reader import PAY_TOKEN, sub_info
 
 
-app = FastAPI()
+app = FastAPI(docs_url=None, redoc_url=None)
 cloud_payments = CloudPayments(PAY_TOKEN)
 
 
@@ -29,7 +29,6 @@ async def fix_payment(payment_model: Request):
     except CloudPaymentsApiError:
         return {"code": 0}
     
-    payment_token = full_payment_inf.get("Token")
     account_id = full_payment_inf.get("AccountId")
 
     json_data_str = full_payment_inf.get("JsonData")
@@ -41,7 +40,7 @@ async def fix_payment(payment_model: Request):
     start_date: datetime = date_dt + sub_info[sub_id]["end"]
 
     sub_resp = await cloud_payments.method("subscriptions/create", {
-        "Token": payment_token,
+        "Token": full_payment_inf.get("Token"),
         "AccountId": account_id,
         "Description": full_payment_inf.get("Description"),
         "Email": full_payment_inf.get("Email"),
