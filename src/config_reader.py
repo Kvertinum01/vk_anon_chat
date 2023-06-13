@@ -13,7 +13,7 @@ BOT_TOKEN_2 = getenv("BOT_TOKEN_2")
 DB_URL = getenv("DB_URL")
 PAY_TOKEN = getenv("PAY_TOKEN")
 
-API_ENDPOINT = "http://localhost:8000"#"https://api.anonas.space"
+API_ENDPOINT = "https://api.anonas.space"
 
 sub_info = {
     0: {"interval": "Week", "period": 2, "end": timedelta(hours=1)},
