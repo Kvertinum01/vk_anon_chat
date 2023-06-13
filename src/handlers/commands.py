@@ -164,6 +164,17 @@ async def remove_vip(message: Message):
     )
 
 
+@bl.private_message(rules.PayloadRule({"cmd": "continue_vip"}))
+async def continue_vip(message: Message):
+    user_rep = UserRepository(message.from_id)
+    user_inf = await user_rep.get()
+
+    await message.answer(
+        "⚡Выберите действие:",
+        keyboard=kbs.main_menu_kb(user_inf.sex, user_inf.vip_status)
+    )
+
+
 @bl.private_message(rules.PayloadRule({"cmd": "confirm_vip"}))
 async def confirm_remove_vip(message: Message):
     user_rep = UserRepository(message.from_id)

@@ -104,4 +104,5 @@ vip_in_chat_kb = (
 confirm_disable_vip_kb = (
     Keyboard(inline=True)
     .add(Text("Подтвердить", {"cmd": "confirm_vip"}), KeyboardButtonColor.NEGATIVE)
+    .add(Text("Отменить", {"cmd": "continue_vip"}), KeyboardButtonColor.POSITIVE)
 ).get_json()
