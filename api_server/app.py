@@ -1,15 +1,76 @@
 import json
+import uuid
+
+from api_server.models import GeneratePayment
 
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+
 from datetime import datetime
 
 from src.chat_manager.cloudpayments import CloudPayments, CloudPaymentsApiError
+from src.models.db import session
 from src.repositories.user import UserRepository
 from src.config_reader import PAY_TOKEN, sub_info
 
+from typing import Dict
+
 
 app = FastAPI(docs_url=None, redoc_url=None)
+app.add_middleware(
+    CORSMiddleware,
+    allow_credentials=True,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 cloud_payments = CloudPayments(PAY_TOKEN)
+
+payment_ids: Dict[str, GeneratePayment] = {}
+
+
+@app.on_event("shutdown")
+async def on_shutdown():
+    await session.close()
+
+
+@app.post("/get_payment/{payment_id}")
+async def generate_payment(payment_id: str):
+    if payment_id not in payment_ids:
+        return {
+            "status": "error",
+            "message": "payment not found",
+            "response": {},
+        }
+    
+    return {
+        "status": "success",
+        "message": "",
+        "response": payment_ids[payment_id].json(),
+    }
+
+
+@app.post("/generate-url")
+async def generate_url(payment_model: GeneratePayment):
+    user_rep = UserRepository(payment_model.user_id)
+    reg_status = await user_rep.check_reg()
+
+    if not reg_status:
+        return {
+            "status": "error",
+            "message": "user not found",
+            "response": {},
+        }
+
+    payment_id = str(uuid.uuid4())
+    payment_ids[payment_id] = payment_model
+
+    return {
+        "status": "success",
+        "message": "",
+        "response": {"payment_id": payment_id},
+    }
 
 
 @app.post("/fix-payment")

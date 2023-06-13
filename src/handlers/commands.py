@@ -1,6 +1,4 @@
-import json
-
-from vkbottle import EMPTY_KEYBOARD, PhotoMessageUploader, API
+from vkbottle import EMPTY_KEYBOARD
 from vkbottle.bot import BotLabeler, Message, rules
 
 from src import texts
@@ -14,7 +12,7 @@ from src.states import UserInfo
 from src.uploading.upload_manager import UploadManager
 from src.uploading.upload_cache import CacheAssistant
 from src.middlewares import api_manager, cached_urls
-from src.config_reader import PAY_TOKEN, rates
+from src.config_reader import PAY_TOKEN, API_ENDPOINT, rates
 
 
 bl = BotLabeler()
@@ -37,19 +35,27 @@ async def send_vip_rates(user_id: int, is_chat = False):
     if cached_urls.get(user_id) is None:
         await cloud_payments.setup(curr_api.http_client)
 
-        pay_objects = [
-            await cloud_payments.method(
-                "orders/create", {
-                    "Amount": curr_data["amount"],
-                    "Description": curr_data["desc"],
-                    "AccountId": str(user_id),
-                    "RequireConfirmation": curr_data["confirm"],
-                    "JsonData": curr_data["json_data"],
+        payment_obj = [
+            await curr_api.http_client.request_json(
+                f"{API_ENDPOINT}/generate-url", "POST", json={
+                    "amount": curr_data["amount"],
+                    "description": curr_data["desc"],
+                    "user_id": str(user_id),
+                    "confiramtion": curr_data["confirm"],
+                    "sub_id": curr_data["sub_id"],
                 }
             ) for curr_data in rates
         ]
-        
-        cached_urls[user_id] = [curr_obj["Url"] for curr_obj in pay_objects]
+
+        curr_ids = [
+            curr_response["response"]["payment_id"]
+            for curr_response in payment_obj
+        ]
+
+        cached_urls[user_id] = [
+            f"https://anonas.space/payment/{curr_id}"
+            for curr_id in curr_ids
+        ]
 
     vip_links = cached_urls[user_id]
 

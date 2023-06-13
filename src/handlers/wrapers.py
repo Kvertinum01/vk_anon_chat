@@ -14,6 +14,13 @@ cloud_payments = CloudPayments(PAY_TOKEN)
 lw = LoopWrapper()
 
 
+async def on_shutdown():
+    await session.close()
+
+
+lw.on_shutdown.append(on_shutdown())
+
+
 @lw.interval(minutes=5)
 async def check_vip():
     all_with_vip_ex = await session.execute(

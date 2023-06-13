@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Оплата</title>
+
+    <script src="https://widget.cloudpayments.ru/bundles/cloudpayments.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+    <script>
+        const publicID = "pk_647eb503abbd54281ec04cd421baf";
+
+        this.pay = () => {
+            const endpoint = "https://api.anonas.space/";
+
+            const queryString = window.location.search;
+            const urlParams = new URLSearchParams(queryString);
+
+            if (!urlParams.has("payment_id")) {
+                return;
+            }
+
+            let payment_id = urlParams.get("payment_id");
+
+            let req_url = endpoint + "get_payment/" + payment_id;
+
+            $.ajax({
+                type: "POST",
+                url: req_url,
+                success: (data) => {
+                    if (data.status == "error") {
+                        return;
+                    }
+
+                    response = $.parseJSON(data.response);
+
+                    let widget_type;
+
+                    if (response.confiramtion) {
+                        widget_type = "auth";
+                    } else {
+                        widget_type = "charge";
+                    }
+
+                    let widget = new cp.CloudPayments();
+                    widget.pay(widget_type, {
+                        publicId: publicID,
+                        amount: response.amount,
+                        description: response.description,
+                        currency: "RUB",
+                        accountId: response.user_id,
+                        requireEmail: true,
+                        skin: "modern",
+                        data: {
+                            sub_id: response.sub_id
+                        }
+                    });
+                }
+            })
+        }
+    </script>
+</head>
+<body onload="pay()"></body>
+</html>

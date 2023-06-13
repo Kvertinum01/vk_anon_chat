@@ -12,7 +12,7 @@ welcome_kb = (
 
 old_chat_conf_kb = (
     Keyboard(inline=True)
-    .add(OpenLink("https://vk.com", "Перейти в чат"))
+    .add(OpenLink("https://vk.me/anon.chat.online", "Перейти в чат"))
 ).get_json()
 
 
