@@ -109,6 +109,11 @@ async def save_user_age(message: Message):
 
 @bl.private_message(text="Начать")
 async def start_bot(message: Message):
+    await message.answer(
+        "Используя бота, вы соглашаетесь с лицензией:\n"
+        "https://anonas.space/terms"
+    )
+
     await message.answer(texts.start_bot, keyboard=kbs.welcome_kb)
 
 
@@ -364,8 +369,14 @@ async def on_all(message: Message):
 
     await message.ctx_api.messages.mark_as_read(peer_id=message.peer_id)
 
+    ignore_texts = ["👤", "👑", "🔍", "💬"]
+    res_text = message.text
+
+    for curr_ignore in ignore_texts:
+        res_text = res_text.replace(curr_ignore, "")
+
     await api_manager[chat_user_id].messages.send(
-        chat_user_id, message=message.text,
+        chat_user_id, message=res_text,
         attachment=",".join(attachments),
         random_id=0
     )

@@ -26,8 +26,39 @@
             -webkit-text-size-adjust: 100%;
         }
 
+        .menu {
+            padding: 0;
+            list-style-type: inside;
+        }
+
+        .menu__item {
+            display: inline-block;
+        }
+
+        .menu__link {
+            font-size: 0.8rem;
+            margin: 0 10px;
+            transition: 0.5s;
+            opacity: 0.75;
+            font-weight: 300;
+        }
+
+        .menu__link:hover {
+            opacity: 1;
+        }
+
+        footer p {
+            border-bottom: 1px solid rgb(200, 200, 200);
+            margin-top: 50px;
+            font-size: 1rem;
+            font-weight: 300;
+            margin-bottom: 30px;
+            padding-bottom: 0.3em;
+        }
+
         .content {
             margin-top: 10vh;
+            margin-bottom: 8vh;
             margin-left: 5vw;
             width: 50vw;
         }
@@ -187,6 +218,17 @@
             В случае отсутствия мотивированного возражения на качество и объем таких услуг в указанный срок,
             оказанные услуги считаются надлежаще оказанными Компанией и принятыми Участником.
         </p>
+
+        <footer>
+            <p>&copy;2023 ANONAS.SPACE | Все права защищены</p>
+
+            <ul class="menu">
+                <li class="menu__item"><a class="menu__link" href="/terms">Условия пользования</a></li>
+                <li class="menu__item"><a class="menu__link" href="/price">Тарифы</a></li>
+                <li class="menu__item"><a class="menu__link" href="/contacts">Контакты</a></li>
+                <li class="menu__item"><a class="menu__link" href="https://vk.com/anonas.space" target="_blank">Поддержка</a></li>
+            </ul>
+        </footer>
     </div>
 </body>
 </html>
