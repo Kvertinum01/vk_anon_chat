@@ -392,10 +392,8 @@ async def on_all(message: Message):
     for curr_ignore in ignore_texts:
         res_text = res_text.replace(curr_ignore, "")
 
-    if not res_text:
+    if not res_text and message.text != "":
         return
-    
-    print(f"\n\n\n{attachments}\n\n\n")
 
     await api_manager[chat_user_id].messages.send(
         chat_user_id, message=res_text,
