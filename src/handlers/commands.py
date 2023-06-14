@@ -201,7 +201,7 @@ async def find_companion(message: Message):
         else:
             return await message.answer(
                 "Поиск по полу доступен только VIP пользователям",
-                kbs.check_price_kb
+                keyboard=kbs.check_price_kb
             )
 
     curr_user = await chat_manager.find_companion(message.from_id, sex_prefer)
