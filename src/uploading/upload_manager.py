@@ -10,7 +10,7 @@ from typing import Optional
 methods = {
     "photo": "photos.saveMessagesPhoto",
     "audio_message": "docs.save",
-    "video": None
+    "video": True
 }
 
 

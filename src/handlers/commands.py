@@ -311,7 +311,7 @@ async def on_all(message: Message):
     for curr_attachment in message.attachments:
         attach_type = curr_attachment.type.value
 
-        upload_manager = UploadManager(message.ctx_api, message.peer_id)
+        upload_manager = UploadManager(api_manager[chat_user_id], message.peer_id)
 
         if not upload_manager.check_document(attach_type):
             continue
@@ -358,11 +358,9 @@ async def on_all(message: Message):
                         "Оформите VIP статус и обменивайтесь голосовыми.",
                         keyboard=kbs.vip_in_chat_kb
                     )
-                
-                doc_bytes = await upload_manager.get_bytes(curr_attachment.audio_message.link_ogg)
 
-                res_string = await upload_manager.get_by_bytes(
-                    attach_type, doc_bytes,
+                res_string = await upload_manager.get_attachment(
+                    attach_type, curr_attachment.audio_message.link_ogg,
                     title="voice_message",
                 )
 
@@ -396,6 +394,8 @@ async def on_all(message: Message):
 
     if not res_text:
         return
+    
+    print(attachments)
 
     await api_manager[chat_user_id].messages.send(
         chat_user_id, message=res_text,
