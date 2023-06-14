@@ -395,7 +395,7 @@ async def on_all(message: Message):
     if not res_text:
         return
     
-    print(attachments)
+    print(f"\n\n\n{attachments}\n\n\n")
 
     await api_manager[chat_user_id].messages.send(
         chat_user_id, message=res_text,
