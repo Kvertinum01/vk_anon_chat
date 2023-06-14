@@ -130,7 +130,7 @@ async def choose_sex(message: Message):
     await user_rep.update_sex(curr_sex)
     await message.answer(
         "⚡Выберите действие:",
-        keyboard=kbs.main_menu_kb(curr_sex, user_inf.vip_status)
+        keyboard=kbs.main_menu_kb(curr_sex)
     )
 
 
@@ -146,7 +146,7 @@ async def show_profile(message: Message):
         sex=text_sex, age=user_inf.age,
         created_at=user_inf.created_at.strftime("%d.%m.%Y"),
         vip_status=text_vip,
-    ), keyboard=kbs.profile_kb(user_inf.vip_status))
+    ), keyboard=kbs.profile_kb())
 
 
 @bl.private_message(rules.CommandRule("подписки", ["!", "/"]))
@@ -164,7 +164,7 @@ async def continue_vip(message: Message):
 
     await message.answer(
         "⚡Выберите действие:",
-        keyboard=kbs.main_menu_kb(user_inf.sex, user_inf.vip_status)
+        keyboard=kbs.main_menu_kb(user_inf.sex)
     )
 
 
@@ -184,7 +184,7 @@ async def confirm_remove_vip(message: Message):
     return "Подписка успешна отключена"
 
 
-@bl.private_message(text=["🔍 Начать поиск", "👄 Найти девушку"])
+@bl.private_message(text=["🔍 Начать поиск", "👄 Найти девушку", "💪 Найти мужчину"])
 async def find_companion(message: Message):
     if chat_manager.check_active_chats(message.from_id):
         return "Вы уже в чате"
@@ -195,8 +195,14 @@ async def find_companion(message: Message):
     sex_prefer = None
     user_inf = await UserRepository(message.from_id).get()
 
-    if message.text in ["👄 Найти девушку"] and user_inf.vip_status:
-        sex_prefer = 2 if user_inf.sex == 1 else 1
+    if message.text in ["👄 Найти девушку", "💪 Найти мужчину"]:
+        if user_inf.vip_status:
+            sex_prefer = 2 if user_inf.sex == 1 else 1
+        else:
+            return await message.answer(
+                "Поиск по полу доступен только VIP пользователям",
+                kbs.check_price_kb
+            )
 
     curr_user = await chat_manager.find_companion(message.from_id, sex_prefer)
     
@@ -246,12 +252,12 @@ async def stop_dialog(message: Message):
 
     await message.answer(
         "✅ Вы закончили диалог",
-        keyboard=kbs.main_menu_kb(curr_user_inf.sex, curr_user_inf.vip_status)
+        keyboard=kbs.main_menu_kb(curr_user_inf.sex)
     )
 
     await api_manager[chat_user_id].messages.send(
         chat_user_id, message="❗Собеседник закончил диалог",
-        keyboard=kbs.main_menu_kb(chat_user_inf.sex, chat_user_inf.vip_status),
+        keyboard=kbs.main_menu_kb(chat_user_inf.sex),
         random_id=0
     )
 
@@ -262,7 +268,7 @@ async def new_chat(message: Message):
     await find_companion(message)
 
 
-@bl.private_message(text="👑 VIP статус")
+@bl.private_message(text=["👑 VIP статус", "Тарифы"])
 async def vip_info(message: Message):
     await send_vip_rates(message.from_id)
 
@@ -282,7 +288,7 @@ async def on_all(message: Message):
     if not chat_manager.check_active_chats(message.from_id):
         return await message.answer(
             texts.unk_command,
-            keyboard=kbs.main_menu_kb(curr_user_inf.sex, curr_user_inf.vip_status)
+            keyboard=kbs.main_menu_kb(curr_user_inf.sex)
         )
     
     chat_user_id = chat_manager.get_active_user(message.from_id)

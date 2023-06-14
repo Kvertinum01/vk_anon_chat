@@ -29,12 +29,15 @@ choose_sex_kb = (
 ).get_json()
 
 
-def main_menu_kb(sex: int, vip_status: bool):
+def main_menu_kb(sex: int):
     kb = Keyboard()
     kb.add(Text("🔍 Начать поиск"), KeyboardButtonColor.POSITIVE)
 
-    if sex == 1 and vip_status:
-        kb.add(Text("👄 Найти девушку"), KeyboardButtonColor.POSITIVE)
+    match sex:
+        case 1:
+            kb.add(Text("👄 Найти девушку"), KeyboardButtonColor.POSITIVE)
+        case 2:
+            kb.add(Text("💪 Найти мужчину"), KeyboardButtonColor.POSITIVE)
 
     kb = (
         kb.row()
@@ -102,4 +105,9 @@ confirm_disable_vip_kb = (
     Keyboard(inline=True)
     .add(Text("Подтвердить", {"cmd": "confirm_vip"}), KeyboardButtonColor.NEGATIVE)
     .add(Text("Отменить", {"cmd": "continue_vip"}), KeyboardButtonColor.POSITIVE)
+).get_json()
+
+check_price_kb = (
+    Keyboard(inline=True)
+    .add(Text("Тарифы"))
 ).get_json()
