@@ -66,5 +66,5 @@ class UploadManager:
 
 
     async def get_attachment(self, doc_type: str, doc_url: str, **params) -> Optional[str]:
-        doc_bytes = self.get_bytes(doc_url)
+        doc_bytes = await self.get_bytes(doc_url)
         return await self.get_by_bytes(doc_type, doc_bytes, **params)
