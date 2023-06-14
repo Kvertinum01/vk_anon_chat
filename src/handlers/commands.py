@@ -59,19 +59,12 @@ async def send_vip_rates(user_id: int, is_chat = False):
 
     vip_links = cached_urls[user_id]
 
-    res_text = texts.vip_info.format(extra_info="")
-
-    if is_chat:
-        res_text = texts.vip_info.format(
-            extra_info="\n1 руб. - 1 час (затем списание 399 руб. раз в 2 недели)\n"
-        )
-
     res_attachment = await cache_assistant.get_photo(
         curr_api, "misc/images/vip_info.jpg"
     )
 
     return await curr_api.messages.send(
-        user_id, random_id=0, message=res_text,
+        user_id, random_id=0, message=texts.vip_info,
         attachment=res_attachment,
         keyboard=kbs.buy_vip_kb(vip_links, is_chat)
     )
@@ -156,7 +149,7 @@ async def show_profile(message: Message):
     ), keyboard=kbs.profile_kb(user_inf.vip_status))
 
 
-@bl.private_message(text="Отключить VIP")
+@bl.private_message(rules.CommandRule("подписки", ["!", "/"]))
 async def remove_vip(message: Message):
     return await message.answer(
         "Вы уверены, что хотетие отключить подписку?",

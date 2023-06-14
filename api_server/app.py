@@ -44,10 +44,22 @@ async def generate_payment(payment_id: str):
             "response": {},
         }
     
+    payment_inf = payment_ids[payment_id].copy()
+    payment_ids.pop(payment_id)
+    
+    user_inf = await UserRepository(payment_inf.user_id).get()
+
+    if user_inf.vip_status:
+        return {
+            "status": "error",
+            "message": "user already have vip status",
+            "response": {},
+        }
+    
     return {
         "status": "success",
         "message": "",
-        "response": payment_ids[payment_id].json(),
+        "response": payment_inf.json(),
     }
 
 
