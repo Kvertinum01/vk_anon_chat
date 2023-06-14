@@ -1,3 +1,6 @@
+import cv2
+import numpy
+
 from vkbottle import EMPTY_KEYBOARD
 from vkbottle.bot import BotLabeler, Message, rules
 
@@ -122,7 +125,9 @@ async def back_to_old_chat(message: Message):
     return await message.answer(texts.old_chat, keyboard=kbs.old_chat_conf_kb)
 
 
-@bl.private_message(text=["Мужской", "Женский"])
+@bl.private_message(
+    rules.PayloadRule([{"cmd": "set_male"}, {"cmd": "set_female"}])
+)
 async def choose_sex(message: Message):
     user_rep = UserRepository(message.from_id)
     user_inf = await user_rep.get()
@@ -318,11 +323,22 @@ async def on_all(message: Message):
                         "Чтобы обмениваться фото с собеседником, подключи VIP тариф",
                         keyboard=kbs.vip_in_chat_kb
                     )
+
+                    photo_bytes = await upload_manager.get_bytes(curr_attachment.photo.sizes[-1].url)
+                    np_image = numpy.asarray(bytearray(photo_bytes), dtype="uint8")
+                    cv2_image = cv2.imdecode(np_image, cv2.IMREAD_COLOR)
+
+                    blured_image = cv2.blur(cv2_image, (40, 40))
+                    img_bytes = cv2.imencode(".png", blured_image)[1].tobytes()
+
+                    curr_img = await upload_manager.get_by_bytes("photo", img_bytes)
+
                     return await api_manager[chat_user_id].messages.send(
                         chat_user_id, random_id=0,
                         message="Собеседник отправил вам фото. "
                         "Разблокируйте возможность просмотра и обмена фотографиями.",
-                        keyboard=kbs.vip_in_chat_kb
+                        keyboard=kbs.vip_in_chat_kb,
+                        attachment=curr_img,
                     )
 
                 res_string = await upload_manager.get_attachment(
@@ -374,6 +390,9 @@ async def on_all(message: Message):
 
     for curr_ignore in ignore_texts:
         res_text = res_text.replace(curr_ignore, "")
+
+    if not res_text:
+        return
 
     await api_manager[chat_user_id].messages.send(
         chat_user_id, message=res_text,

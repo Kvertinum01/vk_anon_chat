@@ -24,8 +24,8 @@ repeat_age_kb = (
 
 choose_sex_kb = (
     Keyboard(inline=True)
-    .add(Text("Мужской"))
-    .add(Text("Женский"))
+    .add(Text("Мужской", {"cmd": "set_male"}))
+    .add(Text("Женский", {"cmd": "set_female"}))
 ).get_json()
 
 

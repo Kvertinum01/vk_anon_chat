@@ -2,7 +2,6 @@ from vkbottle import (
     API,
     PhotoMessageUploader,
     VoiceMessageUploader,
-    VideoUploader,
     BaseUploader
 )
 from typing import Optional
@@ -23,9 +22,13 @@ class UploadManager:
 
     def check_document(self, doc_type):
         return doc_type in methods
+    
 
+    async def get_bytes(self, doc_url: str):
+        return await self._api.http_client.request_content(doc_url)
+    
 
-    async def get_attachment(self, doc_type: str, doc_url: str, **params) -> Optional[str]:
+    async def get_by_bytes(self, doc_type: str, doc_bytes: bytes, **params) -> Optional[str]:
         uploader: Optional[BaseUploader] = None
         upload_doc_type = doc_type
 
@@ -40,8 +43,7 @@ class UploadManager:
             case _:
                 return None
 
-        file_data = await self._api.http_client.request_content(doc_url)
-        file_bytes = uploader.get_bytes_io(file_data)
+        file_bytes = uploader.get_bytes_io(doc_bytes)
 
         server = await uploader.get_server(peer_id=self.peer_id)
 
@@ -61,3 +63,8 @@ class UploadManager:
             response["id"],
             response.get("access_key")
         )
+
+
+    async def get_attachment(self, doc_type: str, doc_url: str, **params) -> Optional[str]:
+        doc_bytes = self.get_bytes(doc_url)
+        return await self.get_by_bytes(doc_type, doc_bytes, **params)
