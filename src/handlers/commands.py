@@ -318,14 +318,15 @@ async def on_all(message: Message):
 
         match attach_type:
             case "photo":
+                doc_bytes = await upload_manager.get_bytes(curr_attachment.photo.sizes[-1].url)
+
                 if not curr_vip_status:
                     await message.answer(
                         "Чтобы обмениваться фото с собеседником, подключи VIP тариф",
                         keyboard=kbs.vip_in_chat_kb
                     )
 
-                    photo_bytes = await upload_manager.get_bytes(curr_attachment.photo.sizes[-1].url)
-                    np_image = numpy.asarray(bytearray(photo_bytes), dtype="uint8")
+                    np_image = numpy.asarray(bytearray(doc_bytes), dtype="uint8")
                     cv2_image = cv2.imdecode(np_image, cv2.IMREAD_COLOR)
 
                     blured_image = cv2.blur(cv2_image, (40, 40))
@@ -341,8 +342,8 @@ async def on_all(message: Message):
                         attachment=curr_img,
                     )
 
-                res_string = await upload_manager.get_attachment(
-                    attach_type, curr_attachment.photo.sizes[-1].url,
+                res_string = await upload_manager.get_by_bytes(
+                    attach_type, doc_bytes
                 )
 
             case "audio_message":
@@ -357,9 +358,11 @@ async def on_all(message: Message):
                         "Оформите VIP статус и обменивайтесь голосовыми.",
                         keyboard=kbs.vip_in_chat_kb
                     )
+                
+                doc_bytes = await upload_manager.get_bytes(curr_attachment.audio_message.link_ogg)
 
-                res_string = await upload_manager.get_attachment(
-                    attach_type, curr_attachment.audio_message.link_ogg,
+                res_string = await upload_manager.get_by_bytes(
+                    attach_type, doc_bytes,
                     title="voice_message",
                 )
 
