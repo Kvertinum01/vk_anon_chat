@@ -114,7 +114,8 @@ async def save_user_age(message: Message):
 async def start_bot(message: Message):
     await message.answer(
         "Используя бота, вы соглашаетесь с лицензией:\n"
-        "https://anonas.space/terms"
+        "https://anonas.space/terms",
+        dont_parse_links=True,
     )
 
     await message.answer(texts.start_bot, keyboard=kbs.welcome_kb)
