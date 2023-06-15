@@ -73,10 +73,15 @@ async def send_vip_rates(user_id: int, is_chat = False):
     )
 
 
-@bl.private_message(text=["Продолжить", "Ввести повторно", "✏ Изменить данные"])
+@bl.private_message(text=["Продолжить", "✏ Изменить данные"])
 async def continue_chat(message: Message):
+    await message.answer("Укажите ваш пол", keyboard=kbs.choose_sex_kb)
+
+
+@bl.private_message(text="Ввести повторно")
+async def repeat_age(message: Message):
     await app.bot.state_dispenser.set(message.from_id, UserInfo.AGE)
-    return "Введите ваш возраст, например 18"
+    return "✏ Введите ваш возраст, чтобы мы подбирали для вас максимально подходящих собеседников"
 
 
 @bl.private_message(state=UserInfo.AGE)
@@ -105,20 +110,24 @@ async def save_user_age(message: Message):
     if await user_rep.get() is not None:
         await user_rep.update_age(int(message.text))
     else:
-        await user_rep.new(int(message.text))
+        return "Для начала пройдите регистрацию"
 
-    await message.answer("Введите ваш пол", keyboard=kbs.choose_sex_kb)
+    user_inf = await user_rep.get()
+
+    await user_rep.end_reg()
+    await message.answer(
+        "⚡Выберите действие:",
+        keyboard=kbs.main_menu_kb(user_inf.sex)
+    )
 
 
 @bl.private_message(text="Начать")
 async def start_bot(message: Message):
     await message.answer(
-        "Используя бота, вы соглашаетесь с лицензией:\n"
-        "https://anonas.space/terms",
+        texts.start_bot,
+        keyboard=kbs.welcome_kb,
         dont_parse_links=True,
     )
-
-    await message.answer(texts.start_bot, keyboard=kbs.welcome_kb)
 
 
 @bl.private_message(text=["⏪ Вернуться в старый чат", "⏪ Старая версия чата"])
@@ -131,18 +140,15 @@ async def back_to_old_chat(message: Message):
 )
 async def choose_sex(message: Message):
     user_rep = UserRepository(message.from_id)
-    user_inf = await user_rep.get()
     curr_sex = 1 if message.text == "Мужской" else 2
 
-    if user_inf is None:
-        return "Для начала пройдите регистрацию"
+    if not await user_rep.get():
+        await user_rep.new(20)
 
-    await user_rep.end_reg()
+    await app.bot.state_dispenser.set(message.from_id, UserInfo.AGE)
+
     await user_rep.update_sex(curr_sex)
-    await message.answer(
-        "⚡Выберите действие:",
-        keyboard=kbs.main_menu_kb(curr_sex)
-    )
+    return "✏ Введите ваш возраст, чтобы мы подбирали для вас максимально подходящих собеседников"
 
 
 @bl.private_message(text="👤 Мой профиль")

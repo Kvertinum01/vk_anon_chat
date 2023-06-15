@@ -45,7 +45,6 @@ async def generate_payment(payment_id: str):
         }
     
     payment_inf = payment_ids[payment_id].copy()
-    payment_ids.pop(payment_id)
     
     user_inf = await UserRepository(payment_inf.user_id).get()
 
