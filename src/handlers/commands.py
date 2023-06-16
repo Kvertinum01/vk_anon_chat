@@ -136,6 +136,7 @@ async def continue_dialog(_):
     return "Продолжайте общение"
 
 
+@bl.private_message(rules.CommandRule("вип", ["!", "/"]))
 @bl.private_message(text=["👑 VIP статус", "Тарифы"])
 async def vip_info(message: Message, user_inf: User):
     await send_vip_rates(message.from_id, user_inf)
