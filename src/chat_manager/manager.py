@@ -46,12 +46,12 @@ class ChatManager:
         if vip_status:
             return False
         
+        dt = datetime.now()
         if user_id not in self._daily_chats:
             self._daily_chats[user_id] = {"date": dt, "limit": 0}
             return False
         
         curr_info = self._daily_chats[user_id]
-        dt = datetime.now()
 
         if curr_info["date"].day != dt.day:
             self._daily_chats[user_id] = {"date": dt, "limit": 0}

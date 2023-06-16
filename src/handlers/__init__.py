@@ -1,3 +1,7 @@
-from src.handlers import commands
+from src.handlers import (
+    commands,
+    chat,
+    vip,
+)
 
-labelers = [commands.bl]
+labelers = [commands.bl, chat.bl, vip.bl]
