@@ -113,6 +113,10 @@ async def fix_payment(payment_model: Request):
 
     json_data_str = full_payment_inf.get("JsonData")
     json_data = json.loads(json_data_str)
+
+    if "sub_id" not in json_data or "vk_group_id" not in json_data:
+        return {"code": 0}
+
     sub_id = int(json_data["sub_id"])
     group_id = json_data["vk_group_id"]
 
@@ -135,8 +139,9 @@ async def fix_payment(payment_model: Request):
 
     await user_rep.set_vip(sub_resp["Id"])
     await API(api_config[group_id]).messages.send(
-        account_id, message="Благодарим за приобретение VIP подписки.",
-        random_id=0,
+        account_id, random_id=0,
+        message="✌ Благодарим за покупку"
+        f"Теперь вы вип до {start_date.strftime('%d.%m.%Y')}"
     )
 
     return {"code": 0}
