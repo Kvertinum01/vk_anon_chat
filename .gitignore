@@ -4,3 +4,4 @@ migration/
 *$py.class
 *.ini
 *.env
+*.json

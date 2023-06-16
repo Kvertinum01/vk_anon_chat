@@ -3,11 +3,11 @@ from vkbottle import API
 
 from src.handlers import labelers
 from src.handlers.wrapers import lw
-from src.config_reader import BOT_TOKEN, BOT_TOKEN_2
+from src.config_reader import api_config
 from src.middlewares import CheckReg, ApiManager, CheckVip
 
 
-api_list = (API(BOT_TOKEN), API(BOT_TOKEN_2))
+api_list = (API(curr_api) for curr_api in api_config.values())
 bot = Bot(loop_wrapper=lw)
 
 

@@ -8,12 +8,16 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-BOT_TOKEN = getenv("BOT_TOKEN")
-BOT_TOKEN_2 = getenv("BOT_TOKEN_2")
 DB_URL = getenv("DB_URL")
 PAY_TOKEN = getenv("PAY_TOKEN")
 
+
+with open("api_config.json") as f:
+    api_config: Dict[str, str] = json.load(f)
+
+
 API_ENDPOINT = "https://api.anonas.space"
+
 
 sub_info = {
     0: {"interval": "Week", "period": 2, "end": timedelta(hours=1)},
@@ -21,6 +25,7 @@ sub_info = {
     2: {"interval": "Week", "period": 2, "end": timedelta(weeks=2)},
     3: {"interval": "Month", "period": 12, "end": timedelta(days=365)}
 }
+
 
 rates: List[Dict[str, Union[int, str]]] = [
     {

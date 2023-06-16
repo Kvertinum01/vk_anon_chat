@@ -11,7 +11,6 @@ from src.middlewares import api_manager
 from src.uploading.upload_manager import UploadManager
 from src.handlers.vip import send_vip_rates
 
-from vkbottle import EMPTY_KEYBOARD
 from vkbottle.bot import BotLabeler, Message, rules
 
 
@@ -138,13 +137,14 @@ async def on_all(message: Message):
     attachments = []
 
     chat_user_inf = await UserRepository(chat_user_id).get()
+    chat_user_api = api_manager[chat_user_id]
 
     curr_vip_status = chat_user_inf.vip_status or curr_user_inf.vip_status
 
     for curr_attachment in message.attachments:
         attach_type = curr_attachment.type.value
 
-        upload_manager = UploadManager(api_manager[chat_user_id], message.peer_id)
+        upload_manager = UploadManager(chat_user_api, message.peer_id)
 
         if not upload_manager.check_document(attach_type):
             continue
@@ -167,7 +167,7 @@ async def on_all(message: Message):
 
                     res_string = await upload_manager.get_by_bytes("photo", img_bytes)
 
-                    await api_manager[chat_user_id].messages.send(
+                    await chat_user_api.messages.send(
                         chat_user_id, random_id=0,
                         message="Собеседник отправил вам фото. "
                         "Разблокируйте возможность просмотра и обмена фотографиями.",
@@ -184,7 +184,7 @@ async def on_all(message: Message):
                         "Голосовые могут отправлять только VIP юзеры",
                         keyboard=kbs.vip_in_chat_kb
                     )
-                    return await api_manager[chat_user_id].messages.send(
+                    return await chat_user_api.messages.send(
                         chat_user_id, random_id=0,
                         message="Собеседник пытался отправить вам голосовое. "
                         "Оформите VIP статус и обменивайтесь голосовыми.",
@@ -202,7 +202,7 @@ async def on_all(message: Message):
                         "Отправка видео ограниченна! Оплатите VIP тариф.",
                         keyboard=kbs.vip_in_chat_kb
                     )
-                    return await api_manager[chat_user_id].messages.send(
+                    return await chat_user_api.messages.send(
                         chat_user_id, random_id=0,
                         message="Собеседник пытался отправить вам видео. "
                         "Разблокируйте возможность просмотра и обмена видео.",
@@ -227,7 +227,7 @@ async def on_all(message: Message):
     if not res_text and message.text != "":
         return
 
-    await api_manager[chat_user_id].messages.send(
+    await chat_user_api.messages.send(
         chat_user_id, message=res_text,
         attachment=",".join(attachments),
         random_id=0

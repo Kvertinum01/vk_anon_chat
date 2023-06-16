@@ -26,6 +26,8 @@ async def send_vip_rates(user_id: int, user_inf: User, is_chat = False):
     if cached_urls.get(user_id) is None:
         await cloud_payments.setup(curr_api.http_client)
 
+        group_id = (await curr_api.groups.get_by_id())[0].id
+
         payment_obj = [
             await curr_api.http_client.request_json(
                 f"{API_ENDPOINT}/generate-url", "POST", json={
@@ -34,6 +36,7 @@ async def send_vip_rates(user_id: int, user_inf: User, is_chat = False):
                     "user_id": str(user_id),
                     "confiramtion": curr_data["confirm"],
                     "sub_id": curr_data["sub_id"],
+                    "group_id": str(group_id).replace("-", "")
                 }
             ) for curr_data in rates
         ]

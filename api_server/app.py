@@ -8,10 +8,12 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from datetime import datetime
 
+from vkbottle import API
+
 from src.chat_manager.cloudpayments import CloudPayments, CloudPaymentsApiError
 from src.models.db import session
 from src.repositories.user import UserRepository
-from src.config_reader import PAY_TOKEN, sub_info
+from src.config_reader import PAY_TOKEN, sub_info, api_config
 
 from typing import Dict
 
@@ -112,8 +114,7 @@ async def fix_payment(payment_model: Request):
     json_data_str = full_payment_inf.get("JsonData")
     json_data = json.loads(json_data_str)
     sub_id = int(json_data["sub_id"])
-    group_id = int(json_data["vk_group_id"])
-    # TODO
+    group_id = json_data["vk_group_id"]
 
     date_iso = full_payment_inf.get("ConfirmDateIso")
     date_dt = datetime.fromisoformat(date_iso)
@@ -133,5 +134,9 @@ async def fix_payment(payment_model: Request):
     })
 
     await user_rep.set_vip(sub_resp["Id"])
+    await API(api_config[group_id]).messages.send(
+        account_id, message="Благодарим за приобретение VIP подписки.",
+        random_id=0,
+    )
 
     return {"code": 0}
