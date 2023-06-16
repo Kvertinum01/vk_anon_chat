@@ -140,7 +140,7 @@ async def fix_payment(payment_model: Request):
     await user_rep.set_vip(sub_resp["Id"])
     await API(api_config[group_id]).messages.send(
         account_id, random_id=0,
-        message="✌ Благодарим за покупку"
+        message="✌ Благодарим за покупку\n"
         f"Теперь вы вип до {start_date.strftime('%d.%m.%Y')}"
     )
 

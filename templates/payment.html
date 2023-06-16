@@ -30,6 +30,7 @@
                 type: "POST",
                 url: req_url,
                 success: (data) => {
+                    console.log(data);
                     if (data.status == "error") {
                         return;
                     }
