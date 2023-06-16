@@ -21,6 +21,9 @@ cached_urls: Dict[int, List[str]] = {}
 class CheckVip(BaseMiddleware[Message]):
     async def pre(self):
         user_inf = await UserRepository(self.event.from_id).get()
+        self.send({"user_inf": user_inf})
+        if user_inf is None:
+            return
         if self.event.from_id in cached_urls and user_inf.vip_status:
             cached_urls.pop(self.event.from_id)
 

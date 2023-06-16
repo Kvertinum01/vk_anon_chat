@@ -1,7 +1,8 @@
 from src.models.user_model import User
 from src.repositories import UserRepository
 
-from typing import Optional, Dict, List
+from typing import Optional, Union, Dict, List
+from datetime import datetime
 
 
 class ChatManager:
@@ -10,6 +11,7 @@ class ChatManager:
         self._queue: List[User] = []
         self._prefers: Dict[int, int] = {}
         self._platform = platform
+        self._daily_chats: Dict[int, Dict[str, Union[int, datetime]]] = {}
 
 
     async def find_companion(self, user_id: int, sex_prefer: Optional[int] = None) -> Optional[User]:
@@ -26,11 +28,36 @@ class ChatManager:
             if user_inf.age - 5 < curr_user.age < user_inf.age + 5:
                 self._queue.remove(curr_user)
                 self.new_chat([user_inf.id, curr_user.id])
+                self.set_daily_chat([user_inf, curr_user])
                 return curr_user
 
         if sex_prefer:
             self._prefers[user_id] = sex_prefer
         return self._queue.append(user_inf)
+    
+
+    def set_daily_chat(self, user_infs: List[User]):
+        for curr_user in user_infs:
+            if curr_user.vip_status:
+                continue
+            self._daily_chats[curr_user.id]["limit"] += 1
+
+    def check_daily_chats(self, user_id: int, vip_status: bool) -> bool:
+        if vip_status:
+            return False
+        
+        if user_id not in self._daily_chats:
+            self._daily_chats[user_id] = {"date": dt, "limit": 0}
+            return False
+        
+        curr_info = self._daily_chats[user_id]
+        dt = datetime.now()
+
+        if curr_info["date"].day != dt.day:
+            self._daily_chats[user_id] = {"date": dt, "limit": 0}
+            return False
+        
+        return curr_info["limit"] > 29
     
 
     def check_queue(self, user_id: int):

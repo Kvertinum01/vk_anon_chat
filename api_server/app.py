@@ -102,6 +102,12 @@ async def fix_payment(payment_model: Request):
         return {"code": 0}
     
     account_id = full_payment_inf.get("AccountId")
+    
+    user_rep = UserRepository(account_id)
+    user_inf = await user_rep.get()
+
+    if user_inf.vip_status:
+        return {"code": 0}
 
     json_data_str = full_payment_inf.get("JsonData")
     json_data = json.loads(json_data_str)
@@ -124,7 +130,6 @@ async def fix_payment(payment_model: Request):
         "Period": sub_info[sub_id]["period"],
     })
 
-    user_rep = UserRepository(account_id)
     await user_rep.set_vip(sub_resp["Id"])
 
     return {"code": 0}

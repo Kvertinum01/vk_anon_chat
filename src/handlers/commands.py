@@ -9,6 +9,7 @@ from src import kbs
 from src import app
 
 from src.repositories import UserRepository
+from src.models.user_model import User
 from src.chat_manager.manager import ChatManager
 from src.chat_manager.cloudpayments import CloudPayments
 from src.states import UserInfo
@@ -24,10 +25,7 @@ chat_manager = ChatManager("vk")
 cloud_payments = CloudPayments(PAY_TOKEN)
 
 
-async def send_vip_rates(user_id: int, is_chat = False):
-    user_rep = UserRepository(user_id)
-    user_inf = await user_rep.get()
-
+async def send_vip_rates(user_id: int, user_inf: User, is_chat = False):
     curr_api = api_manager[user_id]
 
     if user_inf.vip_status:
@@ -152,10 +150,7 @@ async def choose_sex(message: Message):
 
 
 @bl.private_message(text="👤 Мой профиль")
-async def show_profile(message: Message):
-    user_rep = UserRepository(message.from_id)
-    user_inf = await user_rep.get()
-
+async def show_profile(message: Message, user_inf: User):
     text_sex = "Мужской" if user_inf.sex == 1 else "Женский"
     text_vip = "Подключен" if user_inf.vip_status else "Отсутствует"
 
@@ -167,7 +162,10 @@ async def show_profile(message: Message):
 
 
 @bl.private_message(rules.CommandRule("подписки", ["!", "/"]))
-async def remove_vip(message: Message):
+async def remove_vip(message: Message, user_inf: User):
+    if not user_inf.vip_status:
+        return "У вас отсутствует подписка"
+    
     return await message.answer(
         "Вы уверены, что хотетие отключить подписку?",
         keyboard=kbs.confirm_disable_vip_kb
@@ -186,9 +184,8 @@ async def continue_vip(message: Message):
 
 
 @bl.private_message(rules.PayloadRule({"cmd": "confirm_vip"}))
-async def confirm_remove_vip(message: Message):
+async def confirm_remove_vip(message: Message, user_inf: User):
     user_rep = UserRepository(message.from_id)
-    user_inf = await user_rep.get()
 
     if not user_inf.vip_status:
         return "У вас отсутствует подписка"
@@ -202,15 +199,19 @@ async def confirm_remove_vip(message: Message):
 
 
 @bl.private_message(text=["🔍 Начать поиск", "👄 Найти девушку", "💪 Найти мужчину"])
-async def find_companion(message: Message):
+async def find_companion(message: Message, user_inf: User):
     if chat_manager.check_active_chats(message.from_id):
         return "Вы уже в чате"
 
     if chat_manager.check_queue(message.from_id):
         return "Вы уже в очереди"
 
+    if chat_manager.check_daily_chats(message.from_id, user_inf.vip_status):
+        return await message.answer(
+            texts.dialog_limit, keyboard=kbs.check_price_kb,
+        )
+    
     sex_prefer = None
-    user_inf = await UserRepository(message.from_id).get()
 
     if message.text in ["👄 Найти девушку", "💪 Найти мужчину"]:
         if user_inf.vip_status:
@@ -257,7 +258,7 @@ async def continue_dialog(_):
 
 
 @bl.private_message(rules.PayloadRule({"cmd": "yes_stop"}))
-async def stop_dialog(message: Message):
+async def stop_dialog(message: Message, curr_user_inf: User):
     if not chat_manager.check_active_chats(message.from_id):
         return "У вас нет активных чатов"
     
@@ -265,7 +266,6 @@ async def stop_dialog(message: Message):
     chat_manager.remove_active_chat(message.from_id)
 
     chat_user_inf = await UserRepository(chat_user_id).get()
-    curr_user_inf = await UserRepository(message.from_id).get()
 
     await message.answer(
         "✅ Вы закончили диалог",
@@ -280,28 +280,26 @@ async def stop_dialog(message: Message):
 
 
 @bl.private_message(rules.CommandRule("новый", ["!", "/"]))
-async def new_chat(message: Message):
-    await stop_dialog(message)
+async def new_chat(message: Message, user_inf: User):
+    await stop_dialog(message, user_inf)
     await find_companion(message)
 
 
 @bl.private_message(text=["👑 VIP статус", "Тарифы"])
-async def vip_info(message: Message):
-    await send_vip_rates(message.from_id)
+async def vip_info(message: Message, user_inf: User):
+    await send_vip_rates(message.from_id, user_inf)
 
 
 @bl.private_message(text="Оформить")
-async def vip_info(message: Message):
+async def vip_info(message: Message, user_inf: User):
     if not chat_manager.check_active_chats(message.from_id):
         return "Функция доступна только в диалоге с пользователем"
 
-    await send_vip_rates(message.from_id, True)
+    await send_vip_rates(message.from_id, user_inf, True)
 
 
 @bl.private_message()
-async def on_all(message: Message):
-    curr_user_inf = await UserRepository(message.from_id).get()
-
+async def on_all(message: Message, curr_user_inf: User):
     if not chat_manager.check_active_chats(message.from_id):
         return await message.answer(
             texts.unk_command,
