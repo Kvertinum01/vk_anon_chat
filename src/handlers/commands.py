@@ -125,6 +125,7 @@ async def continue_vip(message: Message):
     )
 
 
+@bl.private_message(text="⛔ Остановить диалог")
 @bl.private_message(rules.CommandRule("стоп", ["!", "/"]))
 async def pre_stop_chat(message: Message):
     return await message.answer(texts.stop_dialog, keyboard=kbs.stop_dialog_kb)

@@ -7,3 +7,4 @@ class GeneratePayment(BaseModel):
     user_id: str
     confiramtion: bool
     sub_id: int
+    group_id: int

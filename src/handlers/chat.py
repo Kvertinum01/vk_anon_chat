@@ -27,7 +27,11 @@ async def vip_info(message: Message, user_inf: User):
     await send_vip_rates(message.from_id, user_inf, True)
 
 
-@bl.private_message(text=["🔍 Начать поиск", "👄 Найти девушку", "💪 Найти мужчину"])
+@bl.private_message(text=[
+    "🔍 Начать поиск",
+    "👄 Найти девушку",
+    "💪 Найти мужчину",
+])
 async def find_companion(message: Message):
     if chat_manager.check_active_chats(message.from_id):
         return "Вы уже в чате"
@@ -61,15 +65,27 @@ async def find_companion(message: Message):
             keyboard=kbs.leave_queue_kb
         )
     
-    await message.answer(texts.got_companion, keyboard=EMPTY_KEYBOARD)
+    await message.answer(
+        "Собеседник найден. Общайтесь!",
+        keyboard=kbs.start_dialog_down_kb
+    )
+    await message.answer(texts.got_companion, keyboard=kbs.start_dialog_kb)
+
+    await api_manager[curr_user.id].messages.send(
+        curr_user.id, message="Собеседник найден. Общайтесь!",
+        keyboard=kbs.start_dialog_down_kb, random_id=0
+    )
     await api_manager[curr_user.id].messages.send(
         curr_user.id, message=texts.got_companion,
-        keyboard=EMPTY_KEYBOARD, random_id=0
+        keyboard=kbs.start_dialog_kb, random_id=0
     )
 
 
 @bl.private_message(text="Покинуть очередь")
 async def leave_queue(message: Message):
+    if chat_manager.check_active_chats(message.from_id):
+        return texts.already_in_dialog
+
     leave_res = chat_manager.leave_queue(message.from_id)
 
     if not leave_res:
@@ -101,6 +117,7 @@ async def stop_dialog(message: Message):
     )
 
 
+@bl.private_message(text="🔍 Новый собеседник")
 @bl.private_message(rules.CommandRule("новый", ["!", "/"]))
 async def new_chat(message: Message):
     await stop_dialog(message)
@@ -148,19 +165,18 @@ async def on_all(message: Message):
                     blured_image = cv2.blur(cv2_image, (40, 40))
                     img_bytes = cv2.imencode(".png", blured_image)[1].tobytes()
 
-                    curr_img = await upload_manager.get_by_bytes("photo", img_bytes)
+                    res_string = await upload_manager.get_by_bytes("photo", img_bytes)
 
-                    return await api_manager[chat_user_id].messages.send(
+                    await api_manager[chat_user_id].messages.send(
                         chat_user_id, random_id=0,
                         message="Собеседник отправил вам фото. "
                         "Разблокируйте возможность просмотра и обмена фотографиями.",
                         keyboard=kbs.vip_in_chat_kb,
-                        attachment=curr_img,
                     )
-
-                res_string = await upload_manager.get_by_bytes(
-                    attach_type, doc_bytes
-                )
+                else:
+                    res_string = await upload_manager.get_by_bytes(
+                        attach_type, doc_bytes
+                    )
 
             case "audio_message":
                 if not curr_vip_status:

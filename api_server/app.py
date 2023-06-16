@@ -112,6 +112,8 @@ async def fix_payment(payment_model: Request):
     json_data_str = full_payment_inf.get("JsonData")
     json_data = json.loads(json_data_str)
     sub_id = int(json_data["sub_id"])
+    group_id = int(json_data["vk_group_id"])
+    # TODO
 
     date_iso = full_payment_inf.get("ConfirmDateIso")
     date_dt = datetime.fromisoformat(date_iso)

@@ -45,6 +45,7 @@
                     }
 
                     let widget = new cp.CloudPayments();
+
                     widget.pay(widget_type, {
                         publicId: publicID,
                         amount: response.amount,
@@ -54,7 +55,8 @@
                         requireEmail: true,
                         skin: "modern",
                         data: {
-                            sub_id: response.sub_id
+                            sub_id: response.sub_id,
+                            vk_group_id: response.group_id,
                         }
                     });
                 }

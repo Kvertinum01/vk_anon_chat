@@ -101,13 +101,31 @@ vip_in_chat_kb = (
     .add(Text("Оформить"), KeyboardButtonColor.POSITIVE)
 ).get_json()
 
+
 confirm_disable_vip_kb = (
     Keyboard(inline=True)
     .add(Text("Подтвердить", {"cmd": "confirm_vip"}), KeyboardButtonColor.NEGATIVE)
     .add(Text("Отменить", {"cmd": "continue_vip"}), KeyboardButtonColor.POSITIVE)
 ).get_json()
 
+
 check_price_kb = (
     Keyboard(inline=True)
     .add(Text("Тарифы"))
+).get_json()
+
+
+start_dialog_kb = (
+    Keyboard(inline=True)
+    .add(Text("🔍 Новый собеседник"), KeyboardButtonColor.POSITIVE)
+    .row()
+    .add(Text("⛔ Остановить диалог"), KeyboardButtonColor.NEGATIVE)
+    .row()
+    .add(Text("👑 VIP статус"), KeyboardButtonColor.PRIMARY)
+).get_json()
+
+start_dialog_down_kb = (
+    Keyboard()
+    .add(Text("🔍 Новый собеседник"), KeyboardButtonColor.POSITIVE)
+    .add(Text("⛔ Остановить диалог"), KeyboardButtonColor.NEGATIVE)
 ).get_json()
