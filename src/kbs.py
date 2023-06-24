@@ -5,8 +5,6 @@ from typing import List
 welcome_kb = (
     Keyboard(inline=True)
     .add(Text("Продолжить"), KeyboardButtonColor.POSITIVE)
-    .row()
-    .add(Text("⏪ Вернуться в старый чат"))
 ).get_json()
 
 

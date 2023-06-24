@@ -16,7 +16,7 @@ with open("api_config.json") as f:
     api_config: Dict[str, str] = json.load(f)
 
 
-API_ENDPOINT = "https://api.anonas.space"
+API_ENDPOINT = "https://api.comby.pro"
 
 
 sub_info = {
