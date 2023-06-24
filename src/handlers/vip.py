@@ -47,7 +47,7 @@ async def send_vip_rates(user_id: int, user_inf: User, is_chat = False):
         ]
 
         cached_urls[user_id] = [
-            f"https://anonas.space/payment?payment_id={curr_id}"
+            f"https://comby.pro/payment?payment_id={curr_id}"
             for curr_id in curr_ids
         ]
 
