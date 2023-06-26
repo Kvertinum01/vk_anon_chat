@@ -2,6 +2,7 @@ import json
 import uuid
 
 from api_server.models import GeneratePayment
+from api_server.db import UserRepository, session
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,9 +11,7 @@ from datetime import datetime
 
 from vkbottle import API
 
-from src.chat_manager.cloudpayments import CloudPayments, CloudPaymentsApiError
-from src.models.db import session
-from src.repositories.user import UserRepository
+from payments.cloudpayments import CloudPayments, CloudPaymentsApiError
 from src.config_reader import PAY_TOKEN, sub_info, api_config
 
 from typing import Dict

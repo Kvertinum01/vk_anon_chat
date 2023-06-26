@@ -3,7 +3,7 @@ from vkbottle import LoopWrapper
 from typing import List
 
 from src.config_reader import PAY_TOKEN
-from src.chat_manager.cloudpayments import CloudPayments
+from payments.cloudpayments import CloudPayments
 from src.models.user_model import User
 from src.models.db import session
 
