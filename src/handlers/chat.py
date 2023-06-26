@@ -36,7 +36,9 @@ async def find_companion(message: Message):
         return "Вы уже в чате"
 
     if chat_manager.check_queue(message.from_id):
-        return "Вы уже в очереди"
+        return await message.answer(
+            "Вы уже в очереди", keyboard=kbs.leave_queue_kb
+        )
     
     user_inf = await UserRepository(message.from_id).get()
 

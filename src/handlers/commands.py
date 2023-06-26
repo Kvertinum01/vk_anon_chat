@@ -7,7 +7,7 @@ from src import app
 from src.repositories import UserRepository
 from src.models.user_model import User
 from src.states import UserInfo
-from src.handlers.vip import send_vip_rates
+from src.handlers.vip import send_vip_rates, end_vip
 
 
 bl = BotLabeler()
@@ -111,6 +111,22 @@ async def remove_vip(message: Message, user_inf: User):
     return await message.answer(
         "Вы уверены, что хотетие отключить подписку?",
         keyboard=kbs.confirm_disable_vip_kb
+    )
+
+
+@bl.private_message(rules.PayloadRule({"cmd": "confirm_vip"}))
+async def confirm_vip(message: Message):
+    confirm_res = await end_vip(message.from_id)
+
+    if not confirm_res:
+        return "У вас отсутствует VIP"
+    
+    user_rep = UserRepository(message.from_id)
+    user_inf = await user_rep.get()
+
+    await message.answer(
+        "⚡Выберите действие:",
+        keyboard=kbs.main_menu_kb(user_inf.sex)
     )
 
 

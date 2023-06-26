@@ -9,10 +9,7 @@ from src.config_reader import PAY_TOKEN, API_ENDPOINT, rates
 
 from payments.cloudpayments import CloudPayments
 
-from vkbottle.bot import BotLabeler, Message, rules
 
-
-bl = BotLabeler()
 cache_assistant = CacheAssistant()
 cloud_payments = CloudPayments(PAY_TOKEN)
 
@@ -66,17 +63,16 @@ async def send_vip_rates(user_id: int, user_inf: User, is_chat = False):
     )
 
 
-@bl.private_message(rules.PayloadRule({"cmd": "confirm_vip"}))
-async def confirm_remove_vip(message: Message):
-    user_rep = UserRepository(message.from_id)
+async def end_vip(user_id: int):
+    user_rep = UserRepository(user_id)
     user_inf = await user_rep.get()
 
     if not user_inf.vip_status:
-        return "У вас отсутствует подписка"
+        return False
 
     await cloud_payments.setup()
     await cloud_payments.method("subscriptions/cancel", {"Id": user_inf.sub_id})
 
     await user_rep.del_vip()
 
-    return "Подписка успешна отключена"
+    return True
