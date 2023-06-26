@@ -5,8 +5,10 @@ from src.middlewares import api_manager, cached_urls
 from src.repositories import UserRepository
 from src.models.user_model import User
 from src.uploading.upload_cache import CacheAssistant
-from payments.cloudpayments import CloudPayments
 from src.config_reader import PAY_TOKEN, API_ENDPOINT, rates
+
+from payments.cloudpayments import CloudPayments
+
 from vkbottle.bot import BotLabeler, Message, rules
 
 
