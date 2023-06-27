@@ -80,12 +80,6 @@ async def generate_url(payment_model: GeneratePayment):
     }
 
 
-@app.get("/make_vip/{user_id}")
-async def make_vip(user_id: int):
-    await UserRepository(user_id).set_vip("123")
-    return {"status": "ok"}
-
-
 @app.post("/fix-payment")
 async def fix_payment(payment_model: Request):
     form_data = await payment_model.form()

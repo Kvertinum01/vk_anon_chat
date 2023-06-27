@@ -1,10 +1,10 @@
-from sqlalchemy.ext.asyncio import AsyncSession, AsyncAttrs, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncAttrs, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 
 from src.config_reader import DB_URL
 
 
-engine = create_async_engine(DB_URL, echo=True)
+engine = create_async_engine(DB_URL)
 
 class Base(AsyncAttrs, DeclarativeBase):
     pass
