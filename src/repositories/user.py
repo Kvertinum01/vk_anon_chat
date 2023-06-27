@@ -1,9 +1,11 @@
-from src.models.db import session
 from src.models.user_model import User
+from src.models.db import engine
 
-from typing import Optional
+from typing import Optional, Coroutine
 
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, and_
+from sqlalchemy.orm import sessionmaker
 
 
 class UserRepository:
@@ -13,20 +15,29 @@ class UserRepository:
 
 
     async def get(self) -> Optional[User]:
-        query = select(User).where(and_(User.id == self.user_id, User.platform == self.platform))
-        ex_res = await session.execute(query)
-        user: Optional[User] = ex_res.scalar()
-        return user
+        async_session = sessionmaker(
+            engine, expire_on_commit=False, class_=AsyncSession
+        )
+        async with async_session() as session:
+            query = select(User).where(and_(User.id == self.user_id, User.platform == self.platform))
+            ex_res = await session.execute(query)
+            user: Optional[User] = ex_res.scalar()
+            return user
     
     
     async def new(self, age: int):
-        user_obj = User(
-            id=self.user_id,
-            age=age,
-            platform=self.platform
+        async_session = sessionmaker(
+            engine, expire_on_commit=False, class_=AsyncSession
         )
-        session.add(user_obj)
-        await session.commit()
+        async with async_session() as session:
+            async with session.begin():
+                user_obj = User(
+                    id=self.user_id,
+                    age=age,
+                    platform=self.platform
+                )
+                session.add(user_obj)
+                await session.commit()
 
 
     async def check_reg(self):
@@ -41,50 +52,70 @@ class UserRepository:
     
 
     async def set_vip(self, sub_id: str):
-        await session.execute(
-            update(User)
-            .where(and_(User.id == self.user_id, User.platform == self.platform))
-            .values(
-                vip_status = True,
-                sub_id = sub_id
-            )
+        async_session = sessionmaker(
+            engine, expire_on_commit=False, class_=AsyncSession
         )
-        await session.commit()
+        async with async_session() as session:
+            await session.execute(
+                update(User)
+                .where(and_(User.id == self.user_id, User.platform == self.platform))
+                .values(
+                    vip_status = True,
+                    sub_id = sub_id
+                )
+            )
+            await session.commit()
 
 
     async def del_vip(self):
-        await session.execute(
-            update(User)
-            .where(and_(User.id == self.user_id, User.platform == self.platform))
-            .values(
-                vip_status = False,
-            )
+        async_session = sessionmaker(
+            engine, expire_on_commit=False, class_=AsyncSession
         )
-        await session.commit()
+        async with async_session() as session:
+            await session.execute(
+                update(User)
+                .where(and_(User.id == self.user_id, User.platform == self.platform))
+                .values(
+                    vip_status = False,
+                )
+            )
+            await session.commit()
     
 
     async def end_reg(self):
-        await session.execute(
-            update(User)
-            .where(and_(User.id == self.user_id, User.platform == self.platform))
-            .values(end_reg = True)
+        async_session = sessionmaker(
+            engine, expire_on_commit=False, class_=AsyncSession
         )
-        await session.commit()
+        async with async_session() as session:
+            await session.execute(
+                update(User)
+                .where(and_(User.id == self.user_id, User.platform == self.platform))
+                .values(end_reg = True)
+            )
+            await session.commit()
 
 
     async def update_age(self, new_age: int):
-        await session.execute(
-            update(User)
-            .where(and_(User.id == self.user_id, User.platform == self.platform))
-            .values(age=new_age)
+        async_session = sessionmaker(
+            engine, expire_on_commit=False, class_=AsyncSession
         )
-        await session.commit()
+        async with async_session() as session:
+            await session.execute(
+                update(User)
+                .where(and_(User.id == self.user_id, User.platform == self.platform))
+                .values(age=new_age)
+            )
+            await session.commit()
 
 
     async def update_sex(self, new_sex: int):
-        await session.execute(
-            update(User)
-            .where(and_(User.id == self.user_id, User.platform == self.platform))
-            .values(sex=new_sex)
+        async_session = sessionmaker(
+            engine, expire_on_commit=False, class_=AsyncSession
         )
-        await session.commit()
+        async with async_session() as session:
+            await session.execute(
+                update(User)
+                .where(and_(User.id == self.user_id, User.platform == self.platform))
+                .values(sex=new_sex)
+            )
+            await session.commit()

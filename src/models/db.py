@@ -4,8 +4,7 @@ from sqlalchemy.orm import DeclarativeBase
 from src.config_reader import DB_URL
 
 
-engine = create_async_engine(DB_URL)
-session = AsyncSession(bind=engine)
+engine = create_async_engine(DB_URL, echo=True)
 
 class Base(AsyncAttrs, DeclarativeBase):
     pass

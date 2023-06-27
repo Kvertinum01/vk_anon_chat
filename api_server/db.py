@@ -1,4 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession, AsyncAttrs, create_async_engine
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import (
     select, update, and_,
@@ -16,7 +17,6 @@ from src.config_reader import DB_URL
 
 
 engine = create_async_engine(DB_URL)
-session = AsyncSession(bind=engine)
 
 
 class Base(AsyncAttrs, DeclarativeBase):
@@ -47,10 +47,14 @@ class UserRepository:
 
 
     async def get(self) -> Optional[User]:
-        query = select(User).where(and_(User.id == self.user_id, User.platform == self.platform))
-        ex_res = await session.execute(query)
-        user: Optional[User] = ex_res.scalar()
-        return user
+        async_session = sessionmaker(
+            engine, expire_on_commit=False, class_=AsyncSession
+        )
+        async with async_session() as session:
+            query = select(User).where(and_(User.id == self.user_id, User.platform == self.platform))
+            ex_res = await session.execute(query)
+            user: Optional[User] = ex_res.scalar()
+            return user
     
     async def check_reg(self):
         user = await self.get()
@@ -63,12 +67,16 @@ class UserRepository:
         return True
     
     async def set_vip(self, sub_id: str):
-        await session.execute(
-            update(User)
-            .where(and_(User.id == self.user_id, User.platform == self.platform))
-            .values(
-                vip_status = True,
-                sub_id = sub_id
-            )
+        async_session = sessionmaker(
+            engine, expire_on_commit=False, class_=AsyncSession
         )
-        await session.commit()
+        async with async_session() as session:
+            await session.execute(
+                update(User)
+                .where(and_(User.id == self.user_id, User.platform == self.platform))
+                .values(
+                    vip_status = True,
+                    sub_id = sub_id
+                )
+            )
+            await session.commit()
