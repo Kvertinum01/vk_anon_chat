@@ -2,7 +2,7 @@ import json
 import uuid
 
 from api_server.models import GeneratePayment
-from api_server.db import UserRepository, session
+from api_server.db import UserRepository
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -29,11 +29,6 @@ app.add_middleware(
 cloud_payments = CloudPayments(PAY_TOKEN)
 
 payment_ids: Dict[str, GeneratePayment] = {}
-
-
-@app.on_event("shutdown")
-async def on_shutdown():
-    await session.close()
 
 
 @app.post("/get_payment/{payment_id}")
