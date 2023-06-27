@@ -1,6 +1,5 @@
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import declarative_base
-from sqlalchemy.pool import QueuePool
+from sqlalchemy.ext.asyncio import AsyncSession, AsyncAttrs, create_async_engine
+from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import (
     select, update, and_,
     Column,
@@ -16,9 +15,12 @@ from datetime import datetime
 from src.config_reader import DB_URL
 
 
-engine = create_async_engine(DB_URL, poolclass=QueuePool)
-session = AsyncSession(bind=engine, expire_on_commit=False)
-Base = declarative_base()
+engine = create_async_engine(DB_URL)
+session = AsyncSession(bind=engine)
+
+
+class Base(AsyncAttrs, DeclarativeBase):
+    pass
 
 
 class User(Base):
