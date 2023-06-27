@@ -16,7 +16,7 @@ from src.config_reader import DB_URL
 
 
 engine = create_async_engine(DB_URL)
-session = AsyncSession(bind=engine)
+session = AsyncSession(bind=engine, autoflush=False)
 Base = declarative_base()
 
 
