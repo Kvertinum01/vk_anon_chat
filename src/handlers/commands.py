@@ -125,7 +125,7 @@ async def confirm_vip(message: Message):
     user_inf = await user_rep.get()
 
     await message.answer(
-        "⚡Выберите действие:",
+        "Подписка успешно отключена",
         keyboard=kbs.main_menu_kb(user_inf.sex)
     )
 
