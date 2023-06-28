@@ -106,6 +106,10 @@ async def fix_payment(payment_model: Request):
         return {"code": 0}
 
     json_data_str = full_payment_inf.get("JsonData")
+
+    if not json_data_str:
+        return {"code": 0}
+
     json_data = json.loads(json_data_str)
 
     if "sub_id" not in json_data or "vk_group_id" not in json_data:
