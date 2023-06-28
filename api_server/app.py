@@ -123,7 +123,7 @@ async def fix_payment(payment_model: Request):
         "AccountId": account_id,
         "Description": full_payment_inf.get("Description"),
         "Email": full_payment_inf.get("Email"),
-        "Amount": full_payment_inf.get("Amount"),
+        "Amount": sub_info[sub_id]["next"],
         "Currency": full_payment_inf.get("Currency"),
         "RequireConfirmation": False,
         "StartDate": start_date.strftime("%Y-%m-%dT%H:%M:%S"),
