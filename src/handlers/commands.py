@@ -9,6 +9,7 @@ from src.models.user_model import User
 from src.states import UserInfo
 from src.handlers.vip import send_vip_rates, end_vip
 
+from datetime import datetime
 
 bl = BotLabeler()
 
@@ -161,3 +162,8 @@ async def vip_info(message: Message, user_inf: User):
 @bl.private_message("!endvip")
 async def end_vip_inf(message: Message, user_inf: User):
     await message.answer(user_inf.exp_vip.strftime("%Y-%m-%dT%H:%M:%S"))
+
+@bl.private_message("!setvip")
+async def set_vip(message: Message):
+    user_rep = UserRepository(message.from_id)
+    await user_rep.set_exp(datetime.now())
