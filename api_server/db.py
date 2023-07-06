@@ -66,7 +66,7 @@ class UserRepository:
         
         return True
     
-    async def set_vip(self, sub_id: str):
+    async def set_vip(self, sub_id: str, exp_date: datetime):
         async_session = sessionmaker(
             engine, expire_on_commit=False, class_=AsyncSession
         )
@@ -76,7 +76,22 @@ class UserRepository:
                 .where(and_(User.id == self.user_id, User.platform == self.platform))
                 .values(
                     vip_status = True,
-                    sub_id = sub_id
+                    sub_id = sub_id,
+                    exp_vip = exp_date,
+                )
+            )
+            await session.commit()
+
+    async def set_exp(self, exp_date: datetime):
+        async_session = sessionmaker(
+            engine, expire_on_commit=False, class_=AsyncSession
+        )
+        async with async_session() as session:
+            await session.execute(
+                update(User)
+                .where(and_(User.id == self.user_id, User.platform == self.platform))
+                .values(
+                    exp_vip = exp_date,
                 )
             )
             await session.commit()

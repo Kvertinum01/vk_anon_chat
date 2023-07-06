@@ -1,11 +1,11 @@
 from vkbottle import LoopWrapper
 
 from typing import List
+from datetime import datetime
 
 from payments.cloudpayments import CloudPayments
 
 from src.config_reader import PAY_TOKEN
-from src.repositories import UserRepository
 from src.models.user_model import User
 from src.models.db import engine
 
@@ -39,7 +39,15 @@ async def check_vip():
         for user_inf in all_with_vip:
             sub_inf = await cloud_payments.method("subscriptions/get", {"Id": user_inf.sub_id})
 
-            if sub_inf["Status"] == "Active":
+            if sub_inf["Status"] == "Active" or user_inf.exp_vip > datetime.now():
                 continue
             
-            await UserRepository(user_inf.id).del_vip()
+            await session.execute(
+                update(User)
+                .where(and_(User.id == user_inf.id, User.platform == "vk"))
+                .values(
+                    vip_status = False
+                )
+            )
+            await session.commit()
+

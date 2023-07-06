@@ -7,7 +7,7 @@ from api_server.db import UserRepository
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from vkbottle import API
 
@@ -29,6 +29,13 @@ app.add_middleware(
 cloud_payments = CloudPayments(PAY_TOKEN)
 
 payment_ids: Dict[str, GeneratePayment] = {}
+        
+
+def validate(must_data: list, json_data: dict):
+    for m in must_data:
+        if m not in json_data:
+            return False
+    return True
 
 
 @app.post("/get_payment/{payment_id}")
@@ -98,17 +105,24 @@ async def fix_payment(payment_model: Request):
         return {"code": 0}
     
     account_id = full_payment_inf.get("AccountId")
-    json_data_str = full_payment_inf.get("JsonData")
-    
     user_rep = UserRepository(account_id)
     user_inf = await user_rep.get()
+    
+    if full_payment_inf.get("SubscriptionId") is not None:
+        sub_inf = await cloud_payments.method("subscriptions/get", {"Id": user_inf.sub_id})
+        next_date_iso = sub_inf["NextTransactionDateIso"]
+        next_date = datetime.fromisoformat(next_date_iso)
+        await user_rep.set_exp(next_date)
+        return {"code": 0}
+    
+    json_data_str = full_payment_inf.get("JsonData")
 
-    if user_inf.vip_status or not json_data_str:
+    if user_inf.vip_status:
         return {"code": 0}
 
     json_data = json.loads(json_data_str)
-
-    if "sub_id" not in json_data or "vk_group_id" not in json_data:
+    
+    if not validate(["sub_id", "vk_group_id"], json_data):
         return {"code": 0}
 
     sub_id = int(json_data["sub_id"])
@@ -131,7 +145,7 @@ async def fix_payment(payment_model: Request):
         "Period": sub_info[sub_id]["period"],
     })
 
-    await user_rep.set_vip(sub_resp["Id"])
+    await user_rep.set_vip(sub_resp["Id"], start_date)
     await API(api_config[group_id]).messages.send(
         account_id, random_id=0,
         message="✌ Благодарим за покупку\n"

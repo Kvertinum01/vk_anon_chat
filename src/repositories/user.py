@@ -1,7 +1,8 @@
 from src.models.user_model import User
 from src.models.db import engine
 
-from typing import Optional, Coroutine
+from typing import Optional
+from datetime import datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, and_
@@ -49,37 +50,6 @@ class UserRepository:
             return False
         
         return True
-    
-
-    async def set_vip(self, sub_id: str):
-        async_session = sessionmaker(
-            engine, expire_on_commit=False, class_=AsyncSession
-        )
-        async with async_session() as session:
-            await session.execute(
-                update(User)
-                .where(and_(User.id == self.user_id, User.platform == self.platform))
-                .values(
-                    vip_status = True,
-                    sub_id = sub_id
-                )
-            )
-            await session.commit()
-
-
-    async def del_vip(self):
-        async_session = sessionmaker(
-            engine, expire_on_commit=False, class_=AsyncSession
-        )
-        async with async_session() as session:
-            await session.execute(
-                update(User)
-                .where(and_(User.id == self.user_id, User.platform == self.platform))
-                .values(
-                    vip_status = False,
-                )
-            )
-            await session.commit()
     
 
     async def end_reg(self):
