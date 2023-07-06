@@ -69,8 +69,6 @@ async def end_vip(user_id: int):
 
     if not user_inf.vip_status:
         return False
-    
-    await user_rep.del_vip()
 
     await cloud_payments.setup()
     await cloud_payments.method("subscriptions/cancel", {"Id": user_inf.sub_id})

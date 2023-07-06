@@ -98,16 +98,12 @@ async def fix_payment(payment_model: Request):
         return {"code": 0}
     
     account_id = full_payment_inf.get("AccountId")
+    json_data_str = full_payment_inf.get("JsonData")
     
     user_rep = UserRepository(account_id)
     user_inf = await user_rep.get()
 
-    if user_inf.vip_status:
-        return {"code": 0}
-
-    json_data_str = full_payment_inf.get("JsonData")
-
-    if not json_data_str:
+    if user_inf.vip_status or not json_data_str:
         return {"code": 0}
 
     json_data = json.loads(json_data_str)

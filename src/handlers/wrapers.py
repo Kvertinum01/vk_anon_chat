@@ -5,6 +5,7 @@ from typing import List
 from payments.cloudpayments import CloudPayments
 
 from src.config_reader import PAY_TOKEN
+from src.repositories import UserRepository
 from src.models.user_model import User
 from src.models.db import engine
 
@@ -41,12 +42,4 @@ async def check_vip():
             if sub_inf["Status"] == "Active":
                 continue
             
-            await session.execute(
-                update(User)
-                .where(and_(User.id == user_inf.id, User.platform == "vk"))
-                .values(
-                    vip_status = False
-                )
-            )
-            await session.commit()
-
+            await UserRepository(user_inf.id).del_vip()
