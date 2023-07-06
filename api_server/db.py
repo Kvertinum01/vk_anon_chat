@@ -1,43 +1,15 @@
-from sqlalchemy.ext.asyncio import AsyncSession, AsyncAttrs, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy import (
-    select, update, and_,
-    Column,
-    Integer,
-    String,
-    DateTime,
-    Boolean
-)
+from sqlalchemy import select, update, and_
 
 from typing import Optional
 from datetime import datetime
 
 from src.config_reader import DB_URL
+from src.models.user_model import User
 
 
 engine = create_async_engine(DB_URL)
-
-
-class Base(AsyncAttrs, DeclarativeBase):
-    pass
-
-
-class User(Base):
-    __tablename__ = "user"
-
-    id = Column(Integer, primary_key=True, nullable=False, unique=True)
-    sex = Column(Integer, default=1)
-    age = Column(Integer)
-    created_at = Column(DateTime, default=datetime.now)
-    platform = Column(String(5), default="vk")
-    end_reg = Column(Boolean, default=False)
-    vip_status = Column(Boolean, default=False)
-    sub_id = Column(String(32), default="")
-
-
-    def __repr__(self):
-        return f'<User: {self.id}>'
     
 
 class UserRepository:
