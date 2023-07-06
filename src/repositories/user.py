@@ -65,7 +65,7 @@ class UserRepository:
             await session.commit()
 
 
-    async def set_exp(self, exp_date: datetime):
+    async def end_vip(self):
         async_session = sessionmaker(
             engine, expire_on_commit=False, class_=AsyncSession
         )
@@ -73,9 +73,7 @@ class UserRepository:
             await session.execute(
                 update(User)
                 .where(and_(User.id == self.user_id, User.platform == self.platform))
-                .values(
-                    exp_vip = exp_date,
-                )
+                .values(vip_status = False)
             )
             await session.commit()
 

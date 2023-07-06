@@ -7,7 +7,7 @@ from api_server.db import UserRepository
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from vkbottle import API
 

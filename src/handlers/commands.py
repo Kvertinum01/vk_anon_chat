@@ -157,3 +157,10 @@ async def continue_dialog(_):
 @bl.private_message(text=["👑 VIP статус", "Тарифы"])
 async def vip_info(message: Message, user_inf: User):
     await send_vip_rates(message.from_id, user_inf)
+
+
+@bl.private_message(text="!debug_end_sub")
+async def debug_end_sub(message: Message):
+    user_rep = UserRepository(message.from_id)
+    await user_rep.end_vip()
+    await message.answer("done")
