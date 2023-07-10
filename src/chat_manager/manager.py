@@ -22,8 +22,7 @@ class ChatManager:
             if sex_prefer:
                 if curr_user.sex != sex_prefer:
                     continue
-            if self._prefers.get(curr_user.id):
-                if self._prefers[curr_user.id] != user_inf.sex:
+                if self._prefers.get(curr_user.id) != user_inf.sex:
                     continue
             if user_inf.age - 5 < curr_user.age < user_inf.age + 5:
                 self._queue.remove(curr_user)

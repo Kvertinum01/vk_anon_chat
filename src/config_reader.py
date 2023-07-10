@@ -29,7 +29,7 @@ sub_info = {
 rates: List[Dict[str, Union[int, str]]] = [
     {
         "amount": 1, "desc": "Вип статус на 1 час",
-        "confirm": True, "sub_id": 0,
+        "confirm": False, "sub_id": 0,
     },
     {
         "amount": 9, "desc": "Вип статус на 36 часов",

@@ -81,7 +81,9 @@ def buy_vip_kb(kb_links: List[str], is_chat = False):
     kb = Keyboard(inline=True)
 
     if is_chat:
-        kb.add(OpenLink(kb_links[0], "1 час - 1 ₽")).row()
+        return kb.add(
+            OpenLink(kb_links[0], "1 час - 1 ₽"),
+        ).get_json()
 
     kb = (
         kb.add(OpenLink(kb_links[1], "36 часов - 9 ₽"))

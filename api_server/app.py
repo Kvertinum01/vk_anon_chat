@@ -132,6 +132,12 @@ async def fix_payment(payment_model: Request):
     date_dt = datetime.fromisoformat(date_iso)
     start_date: datetime = date_dt + sub_info[sub_id]["end"]
 
+    await API(api_config[group_id]).messages.send(
+        account_id, random_id=0,
+        message="✌ Благодарим за покупку\n"
+        f"Теперь вы вип до {start_date.strftime('%d.%m.%Y')}"
+    )
+
     sub_resp = await cloud_payments.method("subscriptions/create", {
         "Token": full_payment_inf.get("Token"),
         "AccountId": account_id,
@@ -145,11 +151,10 @@ async def fix_payment(payment_model: Request):
         "Period": sub_info[sub_id]["period"],
     })
 
-    await user_rep.set_vip(sub_resp["Id"], start_date)
-    await API(api_config[group_id]).messages.send(
-        account_id, random_id=0,
-        message="✌ Благодарим за покупку\n"
-        f"Теперь вы вип до {start_date.strftime('%d.%m.%Y')}"
-    )
+    try:
+        await user_rep.set_vip(sub_resp["Id"], start_date)
+    except Exception as e:
+        print(e)
+        return {"code": 0}
 
     return {"code": 0}
