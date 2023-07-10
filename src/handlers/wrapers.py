@@ -1,7 +1,7 @@
 from vkbottle import LoopWrapper
 
 from typing import List
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from payments.cloudpayments import CloudPayments
 
@@ -39,7 +39,9 @@ async def check_vip():
         for user_inf in all_with_vip:
             sub_inf = await cloud_payments.method("subscriptions/get", {"Id": user_inf.sub_id})
 
-            if sub_inf["Status"] == "Active" or user_inf.exp_vip > datetime.now():
+            exp_status = user_inf.exp_vip + timedelta(minutes=5) > datetime.now()
+
+            if sub_inf["Status"] == "Active" or exp_status:
                 continue
             
             await session.execute(

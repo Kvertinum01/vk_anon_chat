@@ -132,7 +132,7 @@ async def fix_payment(payment_model: Request):
     date_dt = datetime.fromisoformat(date_iso)
     start_date: datetime = date_dt + sub_info[sub_id]["end"]
 
-    await API(api_config[group_id]).messages.send(
+    await API(api_config[group_id], ignore_errors=True).messages.send(
         account_id, random_id=0,
         message="✌ Благодарим за покупку\n"
         f"Теперь вы вип до {start_date.strftime('%d.%m.%Y')}"
