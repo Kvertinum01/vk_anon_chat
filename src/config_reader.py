@@ -19,7 +19,7 @@ with open("api_config.json") as f:
 API_ENDPOINT = "https://api.comby.pro"
 
 sub_info = {
-    0: {"next": 399, "interval": "Week", "period": 2, "end": timedelta(hours=1)},
+    0: {"next": 399, "interval": "Week", "period": 2, "end": timedelta(hours=2)},
     1: {"next": 399, "interval": "Week", "period": 2, "end": timedelta(hours=36)},
     2: {"next": 399, "interval": "Week", "period": 2, "end": timedelta(weeks=2)},
     3: {"next": 1990, "interval": "Month", "period": 12, "end": timedelta(days=365)}
